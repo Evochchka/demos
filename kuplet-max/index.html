@@ -1,0 +1,796 @@
+<!doctype html>
+<html lang="ru" data-surface="owner">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<meta name="color-scheme" content="light dark">
+<title>Куплет: бот-песни в MAX (демо)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Onest:wght@400..700&family=Unbounded:wght@500..700&display=swap&subset=cyrillic" rel="stylesheet">
+<style>
+
+:root{
+  --bg:#E9EDF4;--panel:#F7F9FC;--ink:#0F1A33;--ink2:#4A5675;--line:#CBD3E2;--line2:#DCE2EE;
+  --acc:#E8431D;--accInk:#fff;--mint:#0E8F78;--gold:#E7A900;--bad:#C4262E;
+  --sel:#0F1A33;--selInk:#fff;--chat:#DCE3EF;--bot:#fff;--botInk:#0F1A33;--me:#0F1A33;--meInk:#fff;
+  --chip:#EEF2F8;--shadow:0 30px 60px -30px rgba(15,26,51,.45);
+  --fd:'Unbounded','Onest',system-ui,sans-serif;--fb:'Onest',system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0A1124;--panel:#111A35;--ink:#EAF0FF;--ink2:#9DAACB;--line:#27365F;--line2:#1C2849;
+  --acc:#FF6A44;--accInk:#1A0A04;--mint:#2CD3B0;--gold:#FFD25E;--bad:#FF8A8F;
+  --sel:#EAF0FF;--selInk:#0A1124;--chat:#0D1630;--bot:#1A2650;--botInk:#EAF0FF;--me:#2A428A;--meInk:#fff;--chip:#17234A;--shadow:0 30px 60px -30px rgba(0,0,0,.7)}}
+:root[data-theme="dark"]{
+  --bg:#0A1124;--panel:#111A35;--ink:#EAF0FF;--ink2:#9DAACB;--line:#27365F;--line2:#1C2849;
+  --acc:#FF6A44;--accInk:#1A0A04;--mint:#2CD3B0;--gold:#FFD25E;--bad:#FF8A8F;
+  --sel:#EAF0FF;--selInk:#0A1124;--chat:#0D1630;--bot:#1A2650;--botInk:#EAF0FF;--me:#2A428A;--meInk:#fff;--chip:#17234A;--shadow:0 30px 60px -30px rgba(0,0,0,.7)}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{background:var(--bg);color:var(--ink);font:15px/1.45 var(--fb);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.i{width:1.15em;height:1.15em;flex:none;vertical-align:-.2em}
+.num{font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--fd);font-weight:600;letter-spacing:-.01em;text-wrap:balance}
+
+/* оболочка */
+.stage{min-height:100vh;display:grid;grid-template-columns:minmax(380px,430px) minmax(0,1fr);gap:40px;padding:28px 96px 28px 40px;max-width:1500px;margin:0 auto}
+.phoneWrap{display:flex;justify-content:center;align-items:flex-start;position:sticky;top:28px;height:calc(100vh - 56px);min-height:620px}
+.phone{width:100%;max-width:390px;height:min(820px,100%);border-radius:44px;border:1px solid var(--line);background:var(--chat);box-shadow:var(--shadow);position:relative;overflow:hidden;display:flex;flex-direction:column}
+.panel{min-width:0;padding-top:6px}
+
+/* телефон */
+.phHead{display:flex;align-items:center;gap:10px;padding:16px 14px 12px;background:var(--panel);border-bottom:1px solid var(--line);position:relative}
+.phHead:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0 6px,var(--line2) 6px 7px);opacity:.55;pointer-events:none;-webkit-mask-image:linear-gradient(to right,transparent,#000 70%);mask-image:linear-gradient(to right,transparent,#000 70%)}
+.phHead>*{position:relative}
+.ava{width:40px;height:40px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;flex:none}
+.ava svg{width:22px;height:22px}
+.phTitle b{display:block;font:600 15px/1.1 var(--fd)}
+.phTitle span{font-size:12px;color:var(--ink2)}
+.phHead .sp{flex:1}
+.icoBtn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--ink2)}
+.icoBtn:hover{background:var(--chip)}
+.chat{flex:1;overflow-y:auto;padding:14px 12px 10px;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth}
+.msg{max-width:88%;display:flex;flex-direction:column;gap:6px;animation:in .28s ease-out both}
+.msg.bot{align-self:flex-start}.msg.me{align-self:flex-end}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bub{padding:10px 14px;border-radius:20px;background:var(--bot);color:var(--botInk);border:1px solid var(--line2);overflow-wrap:anywhere}
+.me .bub{background:var(--me);color:var(--meInk);border-color:transparent;border-bottom-right-radius:6px}
+.bot .bub{border-bottom-left-radius:6px}
+.bub b{font-weight:650}
+.bub small{display:block;color:var(--ink2);font-size:12.5px;margin-top:2px}
+.me .bub small{color:inherit;opacity:.75}
+.hero{border-radius:24px;background:var(--ink);color:var(--bg);padding:18px 16px 16px;position:relative;overflow:hidden}
+.hero:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0 11px,rgba(255,255,255,.14) 11px 12px);-webkit-mask-image:linear-gradient(to bottom,transparent 5%,#000 40%,transparent 95%);mask-image:linear-gradient(to bottom,transparent 5%,#000 40%,transparent 95%)}
+:root[data-theme="dark"] .hero,:root:not([data-theme="light"]) .hero{--heroBg:#EAF0FF}
+.hero>*{position:relative}
+.hero h3{font-size:25px;line-height:1.05;margin-bottom:6px}
+.hero p{font-size:13.5px;opacity:.82;max-width:30ch}
+.hero .note{position:absolute;right:14px;top:10px;color:var(--acc);font-family:var(--fd);font-size:42px;line-height:1;transform:rotate(8deg)}
+.opts{display:flex;flex-wrap:wrap;gap:6px}
+.opt{padding:9px 14px;border-radius:999px;border:1px solid var(--ink);background:var(--bot);color:var(--botInk);font-size:14px;font-weight:550;transition:transform .12s,background .15s}
+.opt:hover{background:var(--chip)}
+.opt:active{transform:scale(.96)}
+.opt.pri{background:var(--acc);color:var(--accInk);border-color:var(--acc)}
+.opt.sel{background:var(--sel);color:var(--selInk);border-color:var(--sel)}
+.opt[disabled]{opacity:.45;pointer-events:none}
+.opt .i{margin-right:6px}
+.sum{display:grid;grid-template-columns:auto 1fr;gap:3px 12px;font-size:14px}
+.sum dt{color:var(--ink2)}
+.sum dd{font-weight:550}
+.stress{font-family:var(--fd);font-size:20px;letter-spacing:.02em}
+.staff{width:100%;height:84px;display:block}
+.stg{display:flex;flex-direction:column;gap:3px;margin-top:6px;font-size:13px;color:var(--ink2)}
+.stg span{display:flex;align-items:center;gap:6px}
+.stg span.on{color:var(--botInk);font-weight:600}
+.stg span.done{color:var(--mint)}
+.player{display:flex;align-items:center;gap:10px}
+.play{width:44px;height:44px;border-radius:50%;background:var(--acc);color:var(--accInk);display:grid;place-items:center;flex:none}
+.wave{flex:1;height:38px;display:flex;align-items:center;gap:2px;position:relative}
+.wave i{display:block;width:3px;border-radius:2px;background:var(--line);transition:background .2s}
+.wave i.on{background:var(--acc)}
+.tag{display:inline-flex;align-items:center;gap:5px;padding:2px 9px;border-radius:999px;background:var(--chip);font-size:12px;color:var(--ink2)}
+.tag.demo{background:color-mix(in srgb,var(--gold) 22%,transparent);color:var(--botInk)}
+.tag.full{background:color-mix(in srgb,var(--mint) 20%,transparent);color:var(--botInk)}
+.link{display:flex;align-items:center;gap:6px;padding:8px 10px;border-radius:12px;background:var(--chip);font-size:13px;word-break:break-all}
+.meter{height:6px;border-radius:99px;background:var(--line2);overflow:hidden;margin-top:6px}
+.meter i{display:block;height:100%;background:var(--mint);border-radius:99px;transition:width .5s}
+.composer{display:flex;gap:8px;padding:8px 10px 14px;background:var(--panel);border-top:1px solid var(--line);align-items:flex-end}
+.composer textarea{flex:1;resize:none;height:42px;max-height:96px;border-radius:21px;border:1px solid var(--line);background:var(--bg);padding:10px 14px;line-height:1.3}
+.composer textarea::placeholder{color:var(--ink2)}
+.composer .send{width:42px;height:42px;border-radius:50%;background:var(--ink);color:var(--bg);display:grid;place-items:center;flex:none}
+.composer .send:active{transform:scale(.94)}
+.hint{padding:0 14px 6px;background:var(--panel);font-size:12px;color:var(--ink2);min-height:0}
+.sheetBg{position:absolute;inset:0;background:rgba(5,10,24,.5);opacity:0;pointer-events:none;transition:opacity .2s;z-index:5}
+.sheetBg.on{opacity:1;pointer-events:auto}
+.sheet{position:absolute;left:0;right:0;bottom:0;background:var(--panel);border-radius:28px 28px 0 0;padding:20px 18px 24px;transform:translateY(105%);transition:transform .28s cubic-bezier(.2,.8,.2,1);z-index:6;border-top:1px solid var(--line)}
+.sheet.on{transform:none}
+.sheet h3{font-size:17px;margin-bottom:4px}
+.sheet p{color:var(--ink2);font-size:13.5px;margin-bottom:12px}
+.card4242{display:flex;align-items:center;gap:10px;padding:12px 14px;border:1px solid var(--line);border-radius:16px;margin-bottom:12px;font-size:14px}
+.bigBtn{width:100%;padding:14px;border-radius:999px;background:var(--acc);color:var(--accInk);font-weight:650;font-size:16px}
+.bigBtn:active{transform:scale(.98)}
+.ghostBtn{width:100%;padding:12px;margin-top:6px;color:var(--ink2);font-size:14px}
+
+/* панели */
+.pHead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px;flex-wrap:wrap}
+.pHead h1{font-size:clamp(24px,3vw,34px);line-height:1.05}
+.pHead p{color:var(--ink2);font-size:14px;margin-top:4px}
+.tabs{display:flex;gap:4px;padding:4px;border-radius:999px;border:1px solid var(--line);background:var(--panel);width:max-content;max-width:100%;overflow-x:auto;margin-bottom:20px}
+.tab{padding:8px 16px;border-radius:999px;font-weight:550;font-size:14px;color:var(--ink2);white-space:nowrap}
+.tab:hover{color:var(--ink)}
+.tab.on{background:var(--sel);color:var(--selInk)}
+.tab .cnt{display:inline-grid;place-items:center;min-width:18px;height:18px;padding:0 5px;border-radius:99px;background:var(--acc);color:var(--accInk);font-size:11px;margin-left:6px}
+.strip{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);border-bottom:1px solid var(--line);margin-bottom:26px}
+.strip>div{padding:16px 18px 16px 0;border-right:1px solid var(--line2);margin-right:18px}
+.strip>div:last-child{border:0;margin:0}
+.strip small{display:block;color:var(--ink2);font-size:13px}
+.strip b{display:block;font:600 clamp(20px,2.4vw,30px)/1.1 var(--fd);margin:4px 0 2px}
+.strip em{font-style:normal;font-size:12.5px;color:var(--mint)}
+.strip em.dn{color:var(--bad)}
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:32px}
+.sec h2{font-size:16px;margin-bottom:12px}
+.rows>*{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line2)}
+.rows>*:first-child{border-top:1px solid var(--line2)}
+.rows .grow{flex:1;min-width:0}
+.rows .grow b{display:block;font-weight:600}
+.rows .grow span{color:var(--ink2);font-size:13px}
+.pill{display:inline-flex;align-items:center;gap:6px;padding:6px 13px;border-radius:999px;border:1px solid var(--ink);font-weight:550;font-size:13px;white-space:nowrap}
+.pill:hover{background:var(--chip)}
+.pill.pri{background:var(--acc);border-color:var(--acc);color:var(--accInk)}
+.pill.sm{padding:3px 10px;font-size:12px}
+.pill[disabled]{opacity:.4;pointer-events:none}
+.st{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:99px;background:var(--chip)}
+.st:before{content:"";width:8px;height:8px;border-radius:50%;background:var(--ink2)}
+.st.gen:before{background:var(--gold);animation:pulse 1.2s infinite}
+.st.ready:before{background:var(--mint)}
+.st.fix:before{border-radius:2px;background:var(--bad);transform:rotate(45deg)}
+.st.queue:before{background:transparent;border:2px solid var(--ink2)}
+@keyframes pulse{50%{opacity:.35}}
+.bars{display:flex;align-items:flex-end;gap:6px;height:120px;padding-top:6px}
+.bars div{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:4px;height:100%}
+.bars i{display:block;width:100%;border-radius:8px 8px 3px 3px;background:var(--ink);min-height:4px;transform-origin:bottom;animation:grow .7s cubic-bezier(.2,.8,.2,1) both}
+.bars i.now{background:var(--acc)}
+.bars span{font-size:11px;color:var(--ink2)}
+@keyframes grow{from{transform:scaleY(0)}}
+.split{display:grid;grid-template-columns:minmax(260px,.9fr) minmax(0,1.3fr);gap:0;border:1px solid var(--line);border-radius:24px;overflow:hidden;background:var(--panel);min-height:480px}
+.list{border-right:1px solid var(--line);max-height:620px;overflow-y:auto}
+.li{display:flex;gap:10px;align-items:center;padding:12px 14px;border-bottom:1px solid var(--line2);width:100%;text-align:left}
+.li:hover{background:var(--chip)}
+.li.on{background:var(--sel);color:var(--selInk)}
+.li.on .st{color:var(--ink)}
+.li .grow{flex:1;min-width:0}
+.li b{display:block;font-weight:600;font-size:14px}
+.li span.s{font-size:12.5px;opacity:.7}
+.detail{padding:22px 24px}
+.detail h2{font-size:20px;margin-bottom:4px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:6px 18px;margin:14px 0;font-size:14px}
+.kv dt{color:var(--ink2)}
+.story{padding:12px 14px;border-radius:16px;background:var(--chip);font-size:14px;margin:10px 0 16px}
+.steps{display:flex;gap:6px;margin:12px 0 18px;flex-wrap:wrap}
+.steps span{padding:4px 12px;border-radius:99px;border:1px dashed var(--line);font-size:12.5px;color:var(--ink2)}
+.steps span.done{border-style:solid;border-color:var(--mint);color:var(--mint)}
+.steps span.on{border-style:solid;background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.acts{display:flex;gap:8px;flex-wrap:wrap}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{font-weight:550;color:var(--ink2);text-align:right;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12.5px}
+td{padding:11px 10px;border-bottom:1px solid var(--line2);text-align:right}
+th:first-child,td:first-child{text-align:left;padding-left:0}
+td:first-child b{display:block}
+td:first-child span{color:var(--ink2);font-size:12.5px}
+tr.me td{background:color-mix(in srgb,var(--acc) 8%,transparent)}
+.rule{display:flex;gap:14px;align-items:center;padding:14px 0;border-bottom:1px solid var(--line2)}
+.rule .grow{flex:1}
+.rule b{display:block;font-weight:600}
+.rule span{font-size:13px;color:var(--ink2)}
+.tg{width:46px;height:28px;border-radius:99px;background:var(--line);position:relative;transition:background .2s;flex:none}
+.tg:after{content:"";position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:50%;background:var(--bg);transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tg.on{background:var(--mint)}
+.tg.on:after{transform:translateX(18px)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.fld{display:flex;flex-direction:column;gap:6px;margin-bottom:18px}
+.fld label{font-weight:600}
+.fld .row{display:flex;align-items:center;gap:12px}
+.fld .in{width:130px;padding:9px 14px;border-radius:999px;border:1px solid var(--line);background:var(--panel);font-weight:600}
+.gauge{display:flex;align-items:center;gap:12px;padding:14px 16px;border-radius:20px;border:1px solid var(--line);margin:14px 0;background:var(--panel)}
+.gauge .m{flex:1;height:10px;border-radius:99px;background:linear-gradient(90deg,var(--mint),var(--gold),var(--bad));position:relative}
+.gauge .m i{position:absolute;top:-4px;width:6px;height:18px;border-radius:3px;background:var(--ink);transition:left .3s}
+.eco{display:grid;grid-template-columns:repeat(5,1fr);gap:0;border-top:1px solid var(--line);margin-top:6px}
+.eco>div{padding:12px 10px 4px 0}
+.eco small{display:block;color:var(--ink2);font-size:12.5px}
+.eco b{font:600 16px var(--fd)}
+.note2{font-size:13px;color:var(--ink2);margin-top:10px}
+.hl{padding:12px 14px;border-radius:16px;background:color-mix(in srgb,var(--gold) 18%,transparent);font-size:13.5px;margin-bottom:16px}
+.empty{padding:36px 10px;text-align:center;color:var(--ink2)}
+
+/* пульт */
+.pult{position:fixed;right:18px;top:50%;transform:translateY(-50%);z-index:20;display:flex;flex-direction:column;gap:4px;padding:6px;border-radius:999px;background:var(--panel);border:1px solid var(--line);box-shadow:var(--shadow)}
+.pult button{width:52px;height:52px;border-radius:50%;display:grid;place-items:center;color:var(--ink2);position:relative}
+.pult button:hover{background:var(--chip);color:var(--ink)}
+.pult button.on{background:var(--sel);color:var(--selInk)}
+.pult .i{width:22px;height:22px}
+.pult button span.t{position:absolute;right:62px;top:50%;transform:translateY(-50%);white-space:nowrap;background:var(--ink);color:var(--bg);font-size:12px;padding:4px 10px;border-radius:99px;opacity:0;pointer-events:none;transition:opacity .15s}
+.pult button:hover span.t,.pult button:focus-visible span.t{opacity:1}
+.pult .sep{height:1px;background:var(--line);margin:2px 8px}
+.pult .gear{display:none}
+.guide{position:fixed;right:90px;top:50%;transform:translateY(-50%);width:300px;background:var(--panel);border:1px solid var(--line);border-radius:24px;padding:18px 20px;box-shadow:var(--shadow);z-index:21;display:none}
+.guide.on{display:block;animation:in .25s both}
+.guide h3{font-size:15px;margin-bottom:8px}
+.guide ol{padding-left:18px;font-size:13.5px;display:grid;gap:6px}
+.toast{position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);background:var(--ink);color:var(--bg);padding:10px 18px;border-radius:999px;font-size:14px;font-weight:550;opacity:0;pointer-events:none;transition:.25s;z-index:30;max-width:90vw}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+
+@media (max-width:1180px){.strip{grid-template-columns:repeat(2,1fr)}.strip>div:nth-child(2){border-right:0;margin-right:0}.two{grid-template-columns:1fr}.stage{gap:28px;padding-left:24px}}
+@media (max-width:980px){
+  .stage{grid-template-columns:minmax(0,1fr);padding:12px 14px 90px;gap:0}
+  html[data-surface="bot"] .panel{display:none}
+  html:not([data-surface="bot"]) .phoneWrap{display:none}
+  .phoneWrap{position:static;height:auto;padding-top:4px}
+  .phone{height:calc(100vh - 110px);min-height:520px;border-radius:30px}
+  .pult{right:12px;top:auto;bottom:14px;transform:none;flex-direction:row;border-radius:999px}
+  .pult .gear{display:grid}
+  .pult .grp{display:none;flex-direction:row;gap:4px}
+  .pult.open .grp{display:flex}
+  .pult.open .gear{display:none}
+  .pult.open{left:12px;justify-content:center}
+  .pult button span.t{display:none}
+  .pult .sep{width:1px;height:auto;margin:6px 2px}
+  .guide{right:12px;left:12px;top:auto;bottom:86px;transform:none;width:auto}
+  .split{grid-template-columns:1fr}.list{border-right:0;border-bottom:1px solid var(--line);max-height:260px}
+  .eco{grid-template-columns:repeat(2,1fr)}
+  .detail{padding:18px}
+}
+@media (max-width:520px){.strip{grid-template-columns:1fr 1fr}.strip b{font-size:19px}th:nth-child(3),td:nth-child(3),th:nth-child(4),td:nth-child(4){display:none}.pHead h1{font-size:22px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<main class="stage" id="stage">
+  <section class="phoneWrap" aria-label="Бот в MAX">
+    <div class="phone" id="phone">
+      <header class="phHead">
+        <button class="icoBtn" aria-label="Назад" id="phBack"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="m15 18-6-6 6-6" />
+</svg></button>
+        <div class="ava" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 7h18M3 11h18M3 15h18M3 19h18" opacity=".45"/><circle cx="9" cy="15" r="2.6" fill="currentColor" stroke="none"/><path d="M11.4 15V5l5 1.6"/></svg></div>
+        <div class="phTitle"><b>Куплет</b><span>бот · отвечает сразу</span></div>
+        <span class="sp"></span>
+        <button class="icoBtn" aria-label="Меню" id="phMenu"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="1" />
+  <circle cx="12" cy="5" r="1" />
+  <circle cx="12" cy="19" r="1" />
+</svg></button>
+      </header>
+      <div class="chat" id="chat" aria-live="polite"></div>
+      <div class="hint" id="hint"></div>
+      <form class="composer" id="composer" autocomplete="off">
+        <textarea id="inp" rows="1" placeholder="Сообщение" aria-label="Сообщение боту" maxlength="600"></textarea>
+        <button class="send" type="submit" aria-label="Отправить"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" />
+  <path d="m21.854 2.147-10.94 10.939" />
+</svg></button>
+      </form>
+      <div class="sheetBg" id="sheetBg"></div>
+      <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-label="Оплата"></div>
+    </div>
+  </section>
+  <section class="panel" id="panel"></section>
+</main>
+
+<nav class="pult" id="pult" aria-label="Пульт демо">
+  <button class="gear" id="pGear" aria-label="Открыть пульт"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M10 5H3" />
+  <path d="M12 19H3" />
+  <path d="M14 3v4" />
+  <path d="M16 17v4" />
+  <path d="M21 12h-9" />
+  <path d="M21 19h-5" />
+  <path d="M21 5h-7" />
+  <path d="M8 10v4" />
+  <path d="M8 12H3" />
+</svg></button>
+  <div class="grp" style="display:contents">
+    <button data-s="bot" aria-label="Бот в MAX" class="sbot"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
+  <path d="M12 18h.01" />
+</svg><span class="t">Бот в MAX</span></button>
+    <button data-s="partner" aria-label="Кабинет партнёра"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
+  <path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14" />
+  <path d="M8 6v8" />
+</svg><span class="t">Кабинет партнёра</span></button>
+    <button data-s="owner" aria-label="Панель владельца"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <rect width="7" height="9" x="3" y="3" rx="1" />
+  <rect width="7" height="5" x="14" y="3" rx="1" />
+  <rect width="7" height="9" x="14" y="12" rx="1" />
+  <rect width="7" height="5" x="3" y="16" rx="1" />
+</svg><span class="t">Панель владельца</span></button>
+    <div class="sep"></div>
+    <button id="pTheme" aria-label="Тема"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" />
+</svg><span class="t">Светлая / тёмная</span></button>
+    <button id="pGuide" aria-label="Что нажать"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <circle cx="12" cy="12" r="10" />
+  <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+  <path d="M12 17h.01" />
+</svg><span class="t">Что нажать</span></button>
+    <button id="pReset" aria-label="Сбросить демо"><svg
+  class="i" aria-hidden="true"
+  xmlns="http://www.w3.org/2000/svg"
+ 
+ 
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-width="2"
+  stroke-linecap="round"
+  stroke-linejoin="round"
+>
+  <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+  <path d="M21 3v5h-5" />
+  <path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16" />
+  <path d="M8 16H3v5" />
+</svg><span class="t">Сбросить демо</span></button>
+  </div>
+</nav>
+<aside class="guide" id="guide">
+  <h3>Что нажать за 2 минуты</h3>
+  <ol>
+    <li>В боте: «Создать песню», повод, жанр, голос, история.</li>
+    <li>Подтвердите ударение в имени и запустите демо. Заказ появится в панели владельца.</li>
+    <li>Нажмите «Полная версия» и оплатите. Выручка и заработок партнёра вырастут.</li>
+    <li>В «Ценах» поменяйте цену: в боте она обновится.</li>
+    <li>В «Рассылках» двигайте лимит и смотрите риск блокировки.</li>
+  </ol>
+  <p class="note2">Все данные вымышленные. Ничего не сохраняется и никуда не отправляется.</p>
+</aside>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+'use strict';
+const $=s=>document.querySelector(s);
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const NB=' ';
+const rub=n=>Math.round(n).toLocaleString('ru-RU').replace(/\s/g,NB)+NB+'₽';
+const num=n=>Math.round(n).toLocaleString('ru-RU').replace(/\s/g,NB);
+const IC={"banknote": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\" />\n  <circle cx=\"12\" cy=\"12\" r=\"2\" />\n  <path d=\"M6 12h.01M18 12h.01\" />\n</svg>", "check": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M20 6 9 17l-5-5\" />\n</svg>", "chevron-left": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"m15 18-6-6 6-6\" />\n</svg>", "circle-help": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"10\" />\n  <path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\" />\n  <path d=\"M12 17h.01\" />\n</svg>", "clock": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"10\" />\n  <path d=\"M12 6v6l4 2\" />\n</svg>", "copy": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" />\n  <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />\n</svg>", "ellipsis-vertical": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"1\" />\n  <circle cx=\"12\" cy=\"5\" r=\"1\" />\n  <circle cx=\"12\" cy=\"19\" r=\"1\" />\n</svg>", "gift": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M12 7v14\" />\n  <path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\" />\n  <path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\" />\n  <rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\" />\n</svg>", "headphones": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3\" />\n</svg>", "layout-dashboard": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\" />\n  <rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\" />\n</svg>", "link": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" />\n  <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />\n</svg>", "list-music": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M16 5H3\" />\n  <path d=\"M11 12H3\" />\n  <path d=\"M11 19H3\" />\n  <path d=\"M21 16V5\" />\n  <circle cx=\"18\" cy=\"16\" r=\"3\" />\n</svg>", "megaphone": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z\" />\n  <path d=\"M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14\" />\n  <path d=\"M8 6v8\" />\n</svg>", "moon": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401\" />\n</svg>", "music": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M21 16V3a1 1 0 0 0-1.28-.96l-10 2.917a1 1 0 0 0-.72.96V19\" />\n  <circle cx=\"18\" cy=\"16\" r=\"3\" />\n  <circle cx=\"6\" cy=\"19\" r=\"3\" />\n</svg>", "pause": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect x=\"14\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\" />\n  <rect x=\"5\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\" />\n</svg>", "play": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z\" />\n</svg>", "refresh-cw": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\" />\n  <path d=\"M21 3v5h-5\" />\n  <path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\" />\n  <path d=\"M8 16H3v5\" />\n</svg>", "send": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" />\n  <path d=\"m21.854 2.147-10.94 10.939\" />\n</svg>", "share-2": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"18\" cy=\"5\" r=\"3\" />\n  <circle cx=\"6\" cy=\"12\" r=\"3\" />\n  <circle cx=\"18\" cy=\"19\" r=\"3\" />\n  <line x1=\"8.59\" x2=\"15.42\" y1=\"13.51\" y2=\"17.49\" />\n  <line x1=\"15.41\" x2=\"8.59\" y1=\"6.51\" y2=\"10.49\" />\n</svg>", "shield-check": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\" />\n  <path d=\"m9 12 2 2 4-4\" />\n</svg>", "sliders-horizontal": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M10 5H3\" />\n  <path d=\"M12 19H3\" />\n  <path d=\"M14 3v4\" />\n  <path d=\"M16 17v4\" />\n  <path d=\"M21 12h-9\" />\n  <path d=\"M21 19h-5\" />\n  <path d=\"M21 5h-7\" />\n  <path d=\"M8 10v4\" />\n  <path d=\"M8 12H3\" />\n</svg>", "smartphone": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\" />\n  <path d=\"M12 18h.01\" />\n</svg>", "sparkles": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\" />\n  <path d=\"M20 2v4\" />\n  <path d=\"M22 4h-4\" />\n  <circle cx=\"4\" cy=\"20\" r=\"2\" />\n</svg>", "sun": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"4\" />\n  <path d=\"M12 2v2\" />\n  <path d=\"M12 20v2\" />\n  <path d=\"m4.93 4.93 1.41 1.41\" />\n  <path d=\"m17.66 17.66 1.41 1.41\" />\n  <path d=\"M2 12h2\" />\n  <path d=\"M20 12h2\" />\n  <path d=\"m6.34 17.66-1.41 1.41\" />\n  <path d=\"m19.07 4.93-1.41 1.41\" />\n</svg>", "triangle-alert": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\" />\n  <path d=\"M12 9v4\" />\n  <path d=\"M12 17h.01\" />\n</svg>", "users": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" />\n  <path d=\"M16 3.128a4 4 0 0 1 0 7.744\" />\n  <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" />\n  <circle cx=\"9\" cy=\"7\" r=\"4\" />\n</svg>", "wallet": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\" />\n  <path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\" />\n</svg>"};
+const ic=n=>IC[n]||'';
+const OCC={bd:'День рождения',love:'Признание',wed:'Свадьба',jub:'Юбилей',joke:'Чёрный юмор',own:'Своё описание'};
+const GEN=['Поп','Рэп','Шансон','Рок','Баллада','Эстрада 90-х'];
+const VOI=['Женский','Мужской','Дуэт'];
+const SURF=['bot','partner','owner'];
+
+function seed(){
+  return {
+    price:490,share:50,freeLimit:5,cost:38,
+    freeLeft:5,songs:0,friends:0,gifted:0,
+    limit:20,optin:true,night:true,unsub:true,
+    today:{revenue:61740,songs:184,paid:63,toPartners:30870,hours:[4,7,6,9,12,10,14,16]},
+    hoursLbl:['9','10','11','12','13','14','15','16'],
+    orders:[
+      {id:4127,name:'Алина',occ:'bd',gen:'Поп',voi:'Женский',st:'gen',prog:62,paid:false,partner:'p2',ago:2,story:'Подруге Алине 30 лет. Любит кофе, бегает по утрам, боится пауков. Смеёмся над тем, как она опаздывает.'},
+      {id:4126,name:'Максим',occ:'jub',gen:'Шансон',voi:'Мужской',st:'ready',paid:true,partner:'p1',ago:9,story:'Отцу Максиму 60. Всю жизнь на заводе, рыбалка по выходным, золотые руки.'},
+      {id:4125,name:'Ксения',occ:'love',gen:'Баллада',voi:'Женский',st:'fix',paid:true,partner:'p3',ago:21,story:'Признание жене Ксении: познакомились в электричке, 7 лет вместе.',note:'ИИ не уверен в ударении: «Ксения». Нужна ручная проверка.'},
+      {id:4124,name:'Рустам',occ:'joke',gen:'Рэп',voi:'Мужской',st:'ready',paid:false,partner:null,ago:34,story:'Другу Рустаму: вечно «пять минут» превращаются в два часа.'},
+      {id:4123,name:'Лера и Тимур',occ:'wed',gen:'Поп',voi:'Дуэт',st:'ready',paid:true,partner:'p4',ago:48,story:'Свадьба в субботу. Они вместе с института, сбежали из аудитории на первое свидание.'},
+      {id:4122,name:'Зоя',occ:'bd',gen:'Эстрада 90-х',voi:'Женский',st:'queue',prog:0,paid:false,partner:'p2',ago:1,story:'Бабушке Зое 75. Печёт пироги, поёт на кухне, обожает внуков.'},
+      {id:4121,name:'Игорь',occ:'jub',gen:'Рок',voi:'Мужской',st:'ready',paid:true,partner:'p1',ago:73,story:'Коллеге Игорю 40. Главный по серверам, ночью спасает проекты.'},
+      {id:4120,name:'Полина',occ:'bd',gen:'Поп',voi:'Женский',st:'ready',paid:false,partner:'p5',ago:95,story:'Дочке Полине 7 лет. Любит единорогов и рисовать.'}
+    ],
+    partners:[
+      {id:'p1',name:'Афиша 24',ch:'@afisha24_demo',subs:48200,clicks:3120,starts:1180,paid:204,earned:50100,out:30000,req:false},
+      {id:'p2',name:'Новости района',ch:'@rayon_news_demo',subs:91300,clicks:5410,starts:2020,paid:331,earned:81100,out:60000,req:false},
+      {id:'p3',name:'Подслушано у соседей',ch:'@sosedi_demo',subs:27500,clicks:1480,starts:530,paid:88,earned:21500,out:15000,req:true},
+      {id:'p4',name:'Свадьбы и праздники',ch:'@svadba_demo',subs:12400,clicks:910,starts:360,paid:97,earned:23800,out:20000,req:false},
+      {id:'p5',name:'Мамы нашего двора',ch:'@mamy_demo',subs:35600,clicks:2260,starts:790,paid:116,earned:28400,out:25000,req:true}
+    ],
+    chat:[],flow:{step:'idle',d:{}},nextId:4128,sel:4127,tab:'overview',ptab:'main',surface:'owner',audio:{}
+  };
+}
+let S=seed();
+let timers=[];
+const ME='p1';
+
+/* ---------- утилиты ---------- */
+let toastT;
+function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2200)}
+function setSurface(s){S.surface=s;document.documentElement.dataset.surface=s;document.querySelectorAll('.pult [data-s]').forEach(b=>b.classList.toggle('on',b.dataset.s===s));$('#pult').classList.remove('open');renderPanel()}
+function wave(seedN,n){const a=[];let x=seedN*9301+49297;for(let i=0;i<n;i++){x=(x*9301+49297)%233280;const r=x/233280;a.push(Math.round(8+Math.pow(Math.sin(i/n*Math.PI),.6)*24*(.35+r*.65)))}return a}
+function stressOf(word){const v='аеёиоуыэюя';const idx=[];for(let i=0;i<word.length;i++)if(v.includes(word[i].toLowerCase()))idx.push(i);if(!idx.length)return[word,word];const mk=k=>word.slice(0,k+1)+'́'+word.slice(k+1);return idx.length===1?[mk(idx[0])]:[mk(idx[0]),mk(idx[1])]}
+function ordById(id){return S.orders.find(o=>o.id===id)}
+function partnerById(id){return S.partners.find(p=>p.id===id)}
+function addTimer(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t}
+
+/* ---------- чат ---------- */
+function say(m){m.id=m.id||('m'+Math.random().toString(36).slice(2,8));S.chat.push(m);renderChat(true);return m}
+function renderMsg(m){
+  if(m.t==='me')return `<div class="msg me" data-m="${m.id}"><div class="bub">${esc(m.text)}</div></div>`;
+  let h='';
+  if(m.hero)h+=`<div class="hero"><span class="note" aria-hidden="true">♪</span><h3>Песня о вас за три минуты</h3><p>Расскажите историю. Я напишу текст, подберу голос и сведу трек. Первое демо бесплатно.</p></div>`;
+  if(m.text)h+=`<div class="bub">${m.text}</div>`;
+  if(m.sum)h+=`<div class="bub"><dl class="sum">${m.sum.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl></div>`;
+  if(m.progress!==undefined)h+=progressHtml(m);
+  if(m.result)h+=resultHtml(m);
+  if(m.link)h+=`<div class="bub"><b>Ваша ссылка</b><div class="link">${ic('link')}<span>max.ru/kuplet_bot?start=ref_${m.link}</span></div><small>За каждых 5 друзей даём песню в подарок.</small>${meterHtml()}</div>`;
+  if(m.bal)h+=`<div class="bub"><b>Баланс</b><small>Песен на счёте: <span class="num">${S.songs}</span></small><small>Бесплатных демо сегодня: <span class="num">${S.freeLeft}</span> из ${S.freeLimit}. Обновление в 00:00 МСК.</small><div class="meter"><i style="width:${S.freeLimit?S.freeLeft/S.freeLimit*100:0}%"></i></div></div>`;
+  if(m.mine)h+=minesHtml();
+  if(m.opts)h+=`<div class="opts">${m.opts.map(o=>`<button class="opt ${o.cls||''}" data-a="${o.a}" data-v="${esc(o.v||'')}" ${m.done?'disabled':''}>${o.i?ic(o.i):''}${o.l}</button>`).join('')}</div>`;
+  return `<div class="msg bot" data-m="${m.id}">${h}</div>`;
+}
+function meterHtml(){const r=S.friends%5;return `<small>Приглашено: <span class="num">${S.friends}</span>. Подарочных песен: <span class="num">${S.gifted}</span>. До следующей: <span class="num">${5-r}</span>.</small><div class="meter"><i style="width:${r/5*100}%"></i></div>`}
+function minesHtml(){const mine=S.orders.filter(o=>o.mine);if(!mine.length)return `<div class="bub">Пока пусто. Создайте первую песню.</div>`;return `<div class="bub">${mine.map(o=>`<div style="padding:4px 0"><b>«Для ${esc(o.name)}»</b> <span class="tag ${o.paid?'full':'demo'}">${o.paid?'полная 2:41':'демо 0:30'}</span><small>${OCC[o.occ]}, ${o.gen}</small></div>`).join('')}</div>`}
+function stagesFor(p){const st=['Пишу текст','Подбираю мелодию','Записываю голос','Свожу трек'];const k=p<25?0:p<55?1:p<85?2:3;return st.map((s,i)=>`<span class="${i<k?'done':i===k?'on':''}">${i<k?ic('check'):i===k?ic('sparkles'):ic('clock')}${s}</span>`).join('')}
+function staffSvg(p){
+  let notes='';const n=Math.floor(p/100*14);
+  for(let i=0;i<n;i++){const y=[56,48,40,32,24][(i*3+i%2)%5];notes+=`<ellipse cx="${18+i*21}" cy="${y}" rx="5.5" ry="4" fill="currentColor" transform="rotate(-18 ${18+i*21} ${y})"/><path d="M${22.5+i*21} ${y-1}V${y-22}" stroke="currentColor" stroke-width="1.8"/>`}
+  return `<svg class="staff" viewBox="0 0 320 84" role="img" aria-label="Прогресс ${p}%">${[24,32,40,48,56].map(y=>`<line x1="0" x2="320" y1="${y}" y2="${y}" stroke="var(--line)" stroke-width="1.5"/>`).join('')}<g style="color:var(--acc)">${notes}</g></svg>`}
+function progressHtml(m){const p=Math.round(m.progress);return `<div class="bub" data-prog="${m.id}"><b>${m.title||'Делаю песню'}</b> <span class="num" data-pc>${p}%</span>${staffSvg(p)}<div class="stg" data-stg>${stagesFor(p)}</div></div>`}
+function resultHtml(m){
+  const o=ordById(m.result);const full=o&&o.paid;const w=wave(o?o.id:1,34);const pl=S.audio[m.id]||0;
+  return `<div class="bub"><b>«Для ${esc(o?o.name:'вас')}»</b> <span class="tag ${full?'full':'demo'}">${full?'полная версия 2:41':'демо 0:30'}</span>
+  <div class="player" style="margin-top:8px"><button class="play" data-a="play" data-v="${m.id}" aria-label="${pl?'Пауза':'Слушать'}">${ic(pl?'pause':'play')}</button><div class="wave" data-w="${m.id}">${w.map((h,i)=>`<i style="height:${h}px" class="${pl&&i<pl?'on':''}"></i>`).join('')}</div></div>
+  <small>${full?'Без водяного знака, можно скачать и переслать.':'Демо с голосовой меткой. В полной версии 2 минуты 41 секунда.'}</small></div>`}
+function renderChat(scroll){
+  const c=$('#chat');c.innerHTML=S.chat.map(renderMsg).join('');
+  if(scroll)requestAnimationFrame(()=>{c.scrollTop=c.scrollHeight});
+  updateHint();
+}
+function updateHint(){
+  const st=S.flow.step;const h=$('#hint'),i=$('#inp');
+  if(st==='story'){h.textContent='Напишите историю: имя, 2–3 факта (от 12 символов)';i.placeholder='Расскажите историю…'}
+  else if(st==='fix'){h.textContent='Что поменять в песне?';i.placeholder='Например: добавь про кофе'}
+  else{h.textContent='';i.placeholder='Сообщение'}
+}
+function lock(m){m.done=true}
+const MAIN=()=>[{l:'Создать песню',a:'new',i:'music',cls:'pri'},{l:'Баланс',a:'bal',i:'wallet'},{l:'Пригласи друга',a:'inv',i:'gift'},{l:'Мои песни',a:'mine',i:'list-music'},{l:'Поддержка',a:'sup',i:'headphones'}];
+function startChat(){
+  S.chat=[];S.flow={step:'idle',d:{}};
+  say({hero:true,text:`Вы пришли по приглашению <b>Афиша 24</b>. Выберите, с чего начать.`,opts:MAIN()});
+}
+function act(a,v,mid){
+  const m=S.chat.find(x=>x.id===mid);
+  if(m&&['occ','gen','voi','st','go'].includes(a))lock(m);
+  const F=S.flow;
+  const pick=t=>say({t:'me',text:t});
+  switch(a){
+    case 'new':F.d={};F.step='occ';say({text:'Какой повод?',opts:Object.entries(OCC).map(([k,l])=>({l,a:'occ',v:k}))});break;
+    case 'occ':F.d.occ=v;pick(OCC[v]);F.step='gen';say({text:'Выберите жанр.',opts:GEN.map(g=>({l:g,a:'gen',v:g}))});break;
+    case 'gen':F.d.gen=v;pick(v);F.step='voi';say({text:'Чей голос?',opts:VOI.map(g=>({l:g,a:'voi',v:g}))});break;
+    case 'voi':F.d.voi=v;pick(v);F.step='story';say({text:'Расскажите историю: для кого песня, пара фактов, что важно.<small>Чем больше деталей, тем точнее текст.</small>',opts:[{l:'Подставить пример',a:'example',i:'sparkles'}]});break;
+    case 'example':{const t='Подруге Алине 30 лет. Любит кофе, бегает по утрам и вечно опаздывает.';$('#inp').value=t;$('#inp').focus();toast('Пример подставлен. Нажмите «Отправить»');break}
+    case 'st':{F.d.stress=v;pick(v);summary();break}
+    case 'go':{pick('Сделать демо');launch(false);break}
+    case 'buy':openSheet(v?+v:null);break;
+    case 'bal':say({bal:true,opts:[{l:'Купить песню',a:'buy',v:'',i:'wallet',cls:'pri'},{l:'Пригласи друга',a:'inv',i:'gift'}]});break;
+    case 'inv':say({link:'769148',opts:[{l:'Скопировать ссылку',a:'copy',i:'copy'},{l:'Демо: друг запустил бота',a:'friend',i:'users'}]});break;
+    case 'copy':try{navigator.clipboard&&navigator.clipboard.writeText('max.ru/kuplet_bot?start=ref_769148')}catch(e){}toast('Ссылка скопирована');break;
+    case 'friend':S.friends++;if(S.friends%5===0){S.gifted++;S.songs++;say({text:'Пятый друг в боте. Дарю песню: она уже на балансе.'})}else{toast('Друг пришёл: '+S.friends%5+' из 5')}const p=partnerById(ME);p.starts++;renderChat();renderPanel();break;
+    case 'mine':say({mine:true,opts:[{l:'Создать песню',a:'new',i:'music',cls:'pri'}]});break;
+    case 'sup':say({text:'Ответим в течение часа. Напишите менеджеру: <b>@kuplet_help</b>',opts:[{l:'Написать менеджеру',a:'help',i:'headphones'}]});break;
+    case 'help':toast('В демо сообщение не отправляется');break;
+    case 'play':togglePlay(v);break;
+    case 'fix':{const o=ordById(+v);if(o.fixes<=0){toast('Правки закончились');break}F.step='fix';F.d.fixOrder=o.id;say({text:`Что поменять? Осталось правок: <b>${o.fixes}</b> из 3.`});$('#inp').focus();updateHint();break}
+    case 'menu':say({text:'Главное меню',opts:MAIN()});break;
+  }
+}
+function summary(){
+  const d=S.flow.d;S.flow.step='sum';
+  const left=S.freeLeft>0;
+  say({sum:[['Повод',OCC[d.occ]],['Жанр',d.gen],['Голос',d.voi],['Имя',`<span class="stress">${esc(d.stress||d.name)}</span>`],['История',esc(d.story.length>70?d.story.slice(0,70)+'…':d.story)]],
+    text:left?`Демо бесплатно. Осталось сегодня: <b>${S.freeLeft}</b> из ${S.freeLimit}.`:`Бесплатные демо на сегодня закончились. Полная песня стоит <b>${rub(S.price)}</b>.`,
+    opts:left?[{l:'Сделать демо',a:'go',cls:'pri',i:'sparkles'},{l:'Полная версия, '+rub(S.price),a:'buy',v:'',i:'wallet'}]:[{l:'Полная версия, '+rub(S.price),a:'buy',v:'',cls:'pri',i:'wallet'}]});
+}
+function launch(full,fixOrder){
+  const d=S.flow.d;let o;
+  if(fixOrder){o=ordById(fixOrder);o.st='gen';o.prog=0;o.fixes--}
+  else{
+    if(!full&&S.freeLeft>0)S.freeLeft--;
+    o={id:S.nextId++,name:d.name,occ:d.occ,gen:d.gen,voi:d.voi,st:'gen',prog:0,paid:false,partner:ME,ago:0,story:d.story,mine:true,fixes:3,stress:d.stress};
+    S.orders.unshift(o);S.sel=o.id;S.today.songs++;S.today.hours[S.today.hours.length-1]++;
+  }
+  S.flow.step='gen';
+  const m=say({progress:0,title:fixOrder?'Вношу правки':'Делаю песню',oid:o.id});
+  const t0=performance.now();const dur=6500;
+  const tick=()=>{
+    const p=Math.min(100,(performance.now()-t0)/dur*100);m.progress=p;o.prog=p;
+    patchProgress(m);if(S.surface!=='bot')patchAdminProg(o);
+    if(p<100){timers.push(requestAnimationFrame(tick))}else finish(m,o);
+  };
+  timers.push(requestAnimationFrame(tick));
+  renderPanel();
+}
+function finish(m,o){
+  o.st='ready';o.prog=100;S.flow.step='done';
+  m.done=true;
+  const idx=S.chat.indexOf(m);S.chat.splice(idx,1,{id:m.id,text:'Готово!'});
+  say({result:o.id,id:'r'+o.id+'_'+Date.now(),opts:[o.paid?{l:'Отправить другу',a:'inv',i:'share-2',cls:'pri'}:{l:'Полная версия, '+rub(S.price),a:'buy',v:String(o.id),cls:'pri',i:'wallet'},{l:`Исправить (${o.fixes} из 3)`,a:'fix',v:String(o.id),i:'refresh-cw'},{l:'Главное меню',a:'menu',i:'layout-dashboard'}]});
+  renderPanel();
+}
+function patchProgress(m){
+  const el=document.querySelector(`[data-prog="${m.id}"]`);if(!el)return;
+  const p=Math.round(m.progress);const pc=el.querySelector('[data-pc]');if(pc)pc.textContent=p+'%';
+  const sv=el.querySelector('.staff');if(sv){const tmp=document.createElement('div');tmp.innerHTML=staffSvg(p);sv.replaceWith(tmp.firstChild)}
+  const sg=el.querySelector('[data-stg]');if(sg)sg.innerHTML=stagesFor(p);
+}
+function togglePlay(id){
+  const cur=S.audio[id];
+  Object.keys(S.audio).forEach(k=>S.audio[k]=0);
+  clearInterval(togglePlay.iv);
+  if(cur){renderChat();return}
+  S.audio[id]=1;renderChat();
+  const n=34;let step=0;
+  togglePlay.iv=setInterval(()=>{step++;S.audio[id]=step;const w=document.querySelector(`[data-w="${id}"]`);if(w)[...w.children].forEach((e,i)=>e.classList.toggle('on',i<step));if(step>=n){clearInterval(togglePlay.iv);S.audio[id]=0;renderChat()}},330);
+}
+/* оплата */
+let payFor=null;
+function openSheet(oid){
+  payFor=oid;
+  $('#sheet').innerHTML=`<h3>Оплата песни</h3><p>${oid?'Полная версия: 2:41, без метки.':'Одна песня на баланс.'} Демо-оплата, деньги не списываются.</p><div class="card4242">${ic('wallet')}<span>Карта •••• 4242</span><span style="margin-left:auto;font-weight:650" class="num">${rub(S.price)}</span></div><button class="bigBtn" id="payGo">Оплатить ${rub(S.price)}</button><button class="ghostBtn" id="payNo">Отмена</button>`;
+  $('#sheetBg').classList.add('on');$('#sheet').classList.add('on');
+  $('#payGo').onclick=pay;$('#payNo').onclick=closeSheet;
+}
+function closeSheet(){$('#sheetBg').classList.remove('on');$('#sheet').classList.remove('on')}
+function pay(){
+  closeSheet();
+  const amt=S.price;const t=S.today;t.revenue+=amt;t.paid++;
+  let o=payFor?ordById(payFor):null;
+  if(o){o.paid=true;o.amount=amt;
+    const p=partnerById(o.partner);if(p){const cut=amt*S.share/100;p.earned+=cut;p.paid++;t.toPartners+=cut}
+    say({t:'me',text:'Оплатил полную версию'});
+    say({text:`Оплата прошла. Полная версия <b>«Для ${esc(o.name)}»</b> готова: 2 минуты 41 секунда.`});
+    say({result:o.id,id:'r'+o.id+'_'+Date.now(),opts:[{l:'Отправить другу',a:'inv',i:'share-2',cls:'pri'},{l:'Главное меню',a:'menu',i:'layout-dashboard'}]});
+  }else{S.songs++;const p=partnerById(ME);const cut=amt*S.share/100;p.earned+=cut;p.paid++;t.toPartners+=cut;say({t:'me',text:'Купил песню'});say({text:'Песня на балансе. Создавайте!',opts:[{l:'Создать песню',a:'new',i:'music',cls:'pri'}]})}
+  toast('Оплата прошла, заказ обновлён в панели');renderPanel();
+}
+/* ввод */
+$('#composer').addEventListener('submit',e=>{
+  e.preventDefault();const i=$('#inp');const raw=i.value.replace(/\s+/g,' ').trim();if(!raw)return;
+  const F=S.flow;
+  if(F.step==='story'){
+    if(raw.length<12){toast('Расскажите чуть подробнее: от 12 символов');return}
+    if(raw.length>600){toast('Слишком длинно: до 600 символов');return}
+    i.value='';say({t:'me',text:raw});F.d.story=raw;
+    const w=(raw.match(/[А-ЯЁ][а-яё]{2,}/g)||[]);const name=(raw.match(/\b(?:Алин|Максим|Ксени|Игор|Полин|Зо[яю]|Рустам|Лер|Тимур|Анн|Мар|Ольг|Дмитри|Сергей|Андре|Екатерин|Наташ|Ир)[а-яё]*/g)||[])[0]||w.find(x=>!/^(Подруг|Любит|Другу|Отцу|Жене|Маме|Мужу|Сыну|Дочке)/.test(x))||'';
+    F.d.name=name||'друга';
+    if(name){const alt=stressOf(name);F.step='stress';say({text:`Проверим ударение в имени. Как произносить: <span class="stress">${esc(alt[0])}</span>?<small>Бот не угадывает, а спрашивает: так в песне не будет «Аня́» вместо «А́ня».</small>`,opts:alt.concat(alt.length>1?[]:[]).map(a=>({l:a,a:'st',v:a})).concat([{l:'Пропустить',a:'st',v:name}])})}
+    else{F.d.stress=F.d.name;summary()}
+  }else if(F.step==='fix'){
+    i.value='';say({t:'me',text:raw});const oid=F.d.fixOrder;say({text:'Принял правку. Переделываю с учётом вашего пожелания.'});launch(false,oid);
+  }else{i.value='';say({t:'me',text:raw});say({text:'Выберите действие кнопкой ниже.',opts:MAIN()})}
+});
+$('#inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();$('#composer').requestSubmit()}});
+$('#chat').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(!b||b.disabled)return;act(b.dataset.a,b.dataset.v,b.closest('.msg')&&b.closest('.msg').dataset.m)});
+$('#sheetBg').addEventListener('click',closeSheet);
+$('#phMenu').onclick=()=>act('menu');$('#phBack').onclick=()=>act('menu');
+
+/* ---------- панели ---------- */
+const STL={queue:'В очереди',gen:'Генерация',ready:'Готово',fix:'Нужна проверка'};
+function stPill(o){return `<span class="st ${o.st}">${STL[o.st]}${o.st==='gen'?' '+Math.round(o.prog)+'%':''}</span>`}
+function ownerStats(){
+  const t=S.today;const fixes=S.orders.filter(o=>o.st==='fix').length;const reqs=S.partners.filter(p=>p.req).length;
+  return {t,fixes,reqs};
+}
+function riskLevel(){
+  let r=0;if(!S.optin)r+=3;if(!S.unsub)r+=2;if(!S.night)r+=1;if(S.limit>40)r+=3;else if(S.limit>25)r+=1;
+  return r;
+}
+function riskInfo(){const r=riskLevel();return r>=4?{k:'high',t:'Высокий',pos:88}:r>=2?{k:'mid',t:'Средний',pos:52}:{k:'low',t:'Низкий',pos:10}}
+function renderPanel(){
+  const P=$('#panel');const sy=window.scrollY;
+  if(S.surface==='partner')P.innerHTML=partnerView();
+  else if(S.surface==='owner')P.innerHTML=ownerView();
+  else P.innerHTML='';
+  wirePanel();
+}
+function ownerView(){
+  const {t,fixes,reqs}=ownerStats();
+  const tabs=[['overview','Обзор',0],['orders','Заказы',fixes],['partners','Партнёры',reqs],['safe','Рассылки',0],['price','Цены',0]];
+  let h=`<div class="pHead"><div><h1>Сегодня, 10 ноября</h1><p>Панель владельца «Куплет»</p></div></div>
+  <div class="tabs" role="tablist">${tabs.map(([k,l,c])=>`<button class="tab ${S.tab===k?'on':''}" role="tab" data-tab="${k}">${l}${c?`<span class="cnt">${c}</span>`:''}</button>`).join('')}</div>`;
+  if(S.tab==='overview')h+=overview(t,fixes,reqs);
+  if(S.tab==='orders')h+=ordersTab();
+  if(S.tab==='partners')h+=partnersTab();
+  if(S.tab==='safe')h+=safeTab();
+  if(S.tab==='price')h+=priceTab();
+  return h;
+}
+function overview(t,fixes,reqs){
+  const mx=Math.max(...t.hours);
+  const gen=S.orders.filter(o=>o.st==='gen'||o.st==='queue').length;
+  const attn=[];
+  if(fixes)attn.push(`<div>${ic('triangle-alert')}<div class="grow"><b>${fixes} ${fixes===1?'песня ждёт':'песни ждут'} проверки</b><span>ИИ не уверен в ударении имени</span></div><button class="pill sm" data-tab="orders">Открыть</button></div>`);
+  if(reqs)attn.push(`<div>${ic('banknote')}<div class="grow"><b>${reqs} ${reqs===1?'заявка':'заявки'} на выплату</b><span>Партнёры ждут перевод</span></div><button class="pill sm" data-tab="partners">Разобрать</button></div>`);
+  const ri=riskInfo();
+  attn.push(`<div>${ic('shield-check')}<div class="grow"><b>Риск блокировки рассылок: ${ri.t.toLowerCase()}</b><span>Лимит ${S.limit} сообщений в минуту</span></div><button class="pill sm" data-tab="safe">Настроить</button></div>`);
+  return `<div class="strip">
+    <div><small>Выручка за сегодня</small><b class="num">${rub(t.revenue)}</b><em>+12% к вчера</em></div>
+    <div><small>Песен создано</small><b class="num">${num(t.songs)}</b><em>${gen} в работе сейчас</em></div>
+    <div><small>Доплатили за полную</small><b class="num">${num(t.paid)}</b><em>${Math.round(t.paid/t.songs*100)}% от демо</em></div>
+    <div><small>Начислено партнёрам</small><b class="num">${rub(t.toPartners)}</b><em class="dn">${S.share}% с продаж</em></div></div>
+  <div class="two"><div class="sec"><h2>Песен по часам</h2><div class="bars">${t.hours.map((v,i)=>`<div><i class="${i===t.hours.length-1?'now':''}" style="height:${v/mx*100}%"></i><span class="num">${S.hoursLbl[i]}</span></div>`).join('')}</div>
+    <h2 style="margin-top:26px">Последние заказы</h2><div class="rows" id="lastRows">${S.orders.slice(0,5).map(o=>`<div><div class="grow"><b>№ ${o.id}, ${esc(o.name)}</b><span>${OCC[o.occ]}, ${o.gen}</span></div>${stPill(o)}</div>`).join('')}</div></div>
+    <div class="sec"><h2>Требует внимания</h2><div class="rows">${attn.join('')}</div></div></div>`;
+}
+function ordersTab(){
+  const o=ordById(S.sel)||S.orders[0];
+  const stg=['В очереди','Генерация','Готово'];const k={queue:0,gen:1,ready:2,fix:1}[o.st];
+  const pr=o.partner?partnerById(o.partner):null;
+  return `<div class="split"><div class="list" role="listbox">${S.orders.map(x=>`<button class="li ${x.id===o.id?'on':''}" data-sel="${x.id}"><div class="grow"><b>№ ${x.id}, ${esc(x.name)}</b><span class="s">${OCC[x.occ]}, ${x.gen}</span></div>${stPill(x)}</button>`).join('')}</div>
+  <div class="detail"><h2>Заказ № ${o.id}</h2><span class="st ${o.st}" data-adst>${STL[o.st]}${o.st==='gen'?' '+Math.round(o.prog)+'%':''}</span>
+    <dl class="kv"><dt>Для кого</dt><dd>${esc(o.name)}</dd><dt>Повод</dt><dd>${OCC[o.occ]}</dd><dt>Жанр и голос</dt><dd>${o.gen}, ${o.voi.toLowerCase()}</dd><dt>Оплата</dt><dd>${o.paid?'полная версия, '+rub(o.amount||S.price):'демо, бесплатно'}</dd><dt>Партнёр</dt><dd>${pr?esc(pr.name):'пришёл сам'}</dd></dl>
+    <div class="story">${esc(o.story)}</div>
+    ${o.note?`<div class="hl">${ic('triangle-alert')} ${esc(o.note)}</div>`:''}
+    <div class="steps">${stg.map((s,i)=>`<span class="${i<k||o.st==='ready'?'done':i===k?'on':''}">${s}</span>`).join('')}</div>
+    <div class="acts">${o.st==='fix'?`<button class="pill pri" data-fixok="${o.id}">Исправить и выдать клиенту</button>`:''}${o.st==='ready'?`<button class="pill" data-regen="${o.id}">Перегенерировать</button>`:''}<button class="pill" data-nudge="${o.id}">Написать клиенту</button></div></div></div>`;
+}
+function partnersTab(){
+  const tot=S.partners.reduce((s,p)=>s+p.earned-p.out,0);
+  return `<div class="hl">К выплате партнёрам: <b class="num">${rub(tot)}</b>. Доля партнёра сейчас <b>${S.share}%</b> с каждой оплаты (меняется во вкладке «Цены»).</div>
+  <table><thead><tr><th>Партнёр</th><th>Подписчики</th><th>Запуски</th><th>Оплат</th><th>К выплате</th><th></th></tr></thead><tbody>${S.partners.map(p=>{const due=p.earned-p.out;return `<tr class="${p.id===ME?'me':''}"><td><b>${esc(p.name)}</b><span>${p.ch}</span></td><td class="num">${num(p.subs)}</td><td class="num">${num(p.starts)}</td><td class="num">${p.paid}</td><td class="num">${rub(due)}</td><td>${p.req?`<button class="pill sm pri" data-pay="${p.id}">Выплатить</button>`:`<span class="st ready">Нет заявок</span>`}</td></tr>`}).join('')}</tbody></table>
+  <p class="note2">Выплата проходит через самозанятых партнёров: чек формируется автоматически.</p>`;
+}
+function safeTab(){
+  const ri=riskInfo();const aud=21300,ok=S.optin?18420:aud;const eta=Math.ceil(ok/S.limit);
+  const rule=(k,l,s)=>`<div class="rule"><div class="grow"><b>${l}</b><span>${s}</span></div><button class="tg ${S[k]?'on':''}" role="switch" aria-checked="${S[k]}" aria-label="${l}" data-tg="${k}"></button></div>`;
+  return `<div class="hl">MAX блокирует ботов за спам-рассылки. Поэтому пишем только тем, кто сам согласился, и не быстрее заданного лимита.</div>
+  <div class="gauge"><div><small style="color:var(--ink2)">Риск блокировки</small><b style="display:block;font:600 20px var(--fd)">${ri.t}</b></div><div class="m"><i style="left:${ri.pos}%"></i></div></div>
+  ${rule('optin','Только тем, кто согласился','Кнопка «Хочу новости» при первом запуске бота')}
+  ${rule('unsub','«Отписаться» в каждом сообщении','Один тап, без вопросов')}
+  ${rule('night','Не писать с 23:00 до 8:00','Ночью рассылки не уходят')}
+  <div class="rule" style="display:block"><div style="display:flex;justify-content:space-between"><b>Скорость отправки</b><b class="num">${S.limit} сообщ. в минуту</b></div><input type="range" min="5" max="60" step="5" value="${S.limit}" id="limRange" aria-label="Скорость отправки"><span style="font-size:13px;color:var(--ink2)">Рассылка на ${num(ok)} из ${num(aud)} подписчиков уйдёт за ${eta>=60?Math.floor(eta/60)+' ч '+(eta%60)+' мин':eta+' мин'}${S.optin?' ('+Math.round(ok/aud*100)+'% дали согласие)':''}.</span></div>
+  <div class="acts" style="margin-top:16px"><button class="pill pri" data-bc ${ri.k==='high'?'disabled':''}>Запланировать рассылку</button>${ri.k==='high'?`<span class="note2" style="margin:0">При высоком риске запуск закрыт.</span>`:''}</div>`;
+}
+function priceTab(){
+  const p=S.price,sh=S.share/100,c=S.cost;const N=1000;
+  const rev=p*N,par=rev*sh,own=rev-par-c*N;
+  return `<div class="fld"><label for="priceIn">Цена полной песни, ₽</label><div class="row"><input class="in num" id="priceIn" type="number" min="50" max="5000" step="10" value="${p}" aria-describedby="priceErr"><span class="note2" id="priceErr" style="margin:0">в боте цена обновится сразу</span></div></div>
+  <div class="fld"><label for="shRange">Доля партнёра: <span class="num">${S.share}%</span></label><input type="range" id="shRange" min="10" max="90" step="5" value="${S.share}"><span class="note2" style="margin:0">Партнёр получает долю с каждой оплаты по его ссылке.</span></div>
+  <div class="fld"><label for="frIn">Бесплатных демо в день на человека</label><div class="row"><input class="in num" id="frIn" type="number" min="0" max="20" value="${S.freeLimit}"></div></div>
+  <h2 style="font-size:16px;margin:24px 0 4px">Что получится на 1 000 продаж</h2>
+  <div class="eco"><div><small>Выручка</small><b class="num">${rub(rev)}</b></div><div><small>Партнёрам</small><b class="num">${rub(par)}</b></div><div><small>Себестоимость ИИ</small><b class="num">${rub(c*N)}</b></div><div><small>Вам остаётся</small><b class="num" style="color:${own>0?'var(--mint)':'var(--bad)'}">${rub(own)}</b></div><div><small>С одной песни</small><b class="num">${rub(own/N)}</b></div></div>
+  <p class="note2">Себестоимость ${c} ₽ на песню: расчёт для примера, уточним после выбора моделей ИИ.</p>`;
+}
+function partnerView(){
+  const p=partnerById(ME);const due=p.earned-p.out;const conv=Math.round(p.paid/p.starts*100);
+  const posts=[['Для именинника','Дарим песню на день рождения: расскажите историю, а бот напишет текст и споёт. Первое демо бесплатно.'],['Для свадьбы','Подарок молодожёнам: песня про вашу историю знакомства. Попробуйте демо.'],['Для друзей','Хотите, чтобы про вас спели? Пять минут, и песня готова.']];
+  return `<div class="pHead"><div><h1>${esc(p.name)}</h1><p>Кабинет партнёра</p></div></div>
+  <div class="strip"><div><small>Переходы по ссылке</small><b class="num">${num(p.clicks)}</b><em>${num(p.subs)} подписчиков</em></div><div><small>Запустили бота</small><b class="num">${num(p.starts)}</b><em>${Math.round(p.starts/p.clicks*100)}% от переходов</em></div><div><small>Оплатили</small><b class="num">${num(p.paid)}</b><em>${conv}% от запусков</em></div><div><small>Заработано</small><b class="num">${rub(p.earned)}</b><em>${S.share}% с каждой оплаты</em></div></div>
+  <div class="two"><div class="sec"><h2>Ваша ссылка</h2><div class="link" style="margin-bottom:18px">${ic('link')}<span>max.ru/kuplet_bot?start=ref_${ME}</span></div>
+    <h2>Готовые посты</h2><div class="rows">${posts.map(([a,b],i)=>`<div><div class="grow"><b>${a}</b><span>${b}</span></div><button class="pill sm" data-cp="${i}">${ic('copy')}Скопировать</button></div>`).join('')}</div></div>
+  <div class="sec"><h2>Выплаты</h2><div class="gauge" style="display:block"><small style="color:var(--ink2)">Доступно к выплате</small><b style="display:block;font:600 26px var(--fd);margin:2px 0 10px" class="num">${rub(due)}</b>${p.req?`<span class="st gen">Заявка отправлена</span><p class="note2">Владелец увидит её в панели и переведёт деньги.</p>`:`<button class="pill pri" data-req ${due<1000?'disabled':''}>Заказать выплату</button><p class="note2">Минимум 1 000 ₽. Выплата самозанятому, чек формируется сам.</p>`}</div>
+    <p class="note2">Выплачено всего: <b class="num">${rub(p.out)}</b></p></div></div>`;
+}
+function wirePanel(){
+  const P=$('#panel');
+  P.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;renderPanel()});
+  P.querySelectorAll('[data-sel]').forEach(b=>b.onclick=()=>{S.sel=+b.dataset.sel;renderPanel()});
+  P.querySelectorAll('[data-fixok]').forEach(b=>b.onclick=()=>{const o=ordById(+b.dataset.fixok);o.st='ready';o.note=null;toast('Песня выдана клиенту');renderPanel()});
+  P.querySelectorAll('[data-regen]').forEach(b=>b.onclick=()=>{const o=ordById(+b.dataset.regen);o.st='gen';o.prog=0;renderPanel();const t0=performance.now();const tk=()=>{const p=Math.min(100,(performance.now()-t0)/3500*100);o.prog=p;patchAdminProg(o);if(p<100)timers.push(requestAnimationFrame(tk));else{o.st='ready';renderPanel();toast('Песня пересобрана')}};timers.push(requestAnimationFrame(tk))});
+  P.querySelectorAll('[data-nudge]').forEach(b=>b.onclick=()=>{const o=ordById(+b.dataset.nudge);if(o.mine){say({text:'Менеджер: хотим уточнить пару деталей по вашей песне. Пишите сюда.'});toast('Сообщение ушло в бот слева')}else toast('В демо сообщение не отправляется')});
+  P.querySelectorAll('[data-pay]').forEach(b=>b.onclick=()=>{const p=partnerById(b.dataset.pay);p.out=p.earned;p.req=false;toast('Выплачено: '+p.name);renderPanel()});
+  P.querySelectorAll('[data-tg]').forEach(b=>b.onclick=()=>{S[b.dataset.tg]=!S[b.dataset.tg];renderPanel()});
+  const lr=$('#limRange');if(lr)lr.oninput=()=>{S.limit=+lr.value;renderPanel();const n=$('#limRange');n&&n.focus()};
+  const bc=P.querySelector('[data-bc]');if(bc)bc.onclick=()=>toast('Рассылка запланирована на 18:00 (демо)');
+  const pi=$('#priceIn');if(pi)pi.onchange=()=>{let v=Math.round(+pi.value);if(!(v>=50&&v<=5000)){toast('Цена от 50 до 5 000 ₽');pi.value=S.price;return}S.price=v;renderChat();renderPanel();toast('Цена в боте: '+rub(v))};
+  const sr=$('#shRange');if(sr)sr.oninput=()=>{S.share=+sr.value;renderPanel();const n=$('#shRange');n&&n.focus()};
+  const fr=$('#frIn');if(fr)fr.onchange=()=>{let v=Math.round(+fr.value);if(!(v>=0&&v<=20)){toast('От 0 до 20');fr.value=S.freeLimit;return}S.freeLimit=v;S.freeLeft=Math.min(S.freeLeft,v);renderChat();renderPanel()};
+  P.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{toast('Текст скопирован')});
+  const rq=P.querySelector('[data-req]');if(rq)rq.onclick=()=>{partnerById(ME).req=true;toast('Заявка отправлена владельцу');renderPanel()};
+}
+function patchAdminProg(o){
+  const el=document.querySelector('[data-adst]');if(el&&S.sel===o.id){el.textContent=STL[o.st]+(o.st==='gen'?' '+Math.round(o.prog)+'%':'')}
+}
+
+/* ---------- пульт ---------- */
+document.querySelectorAll('.pult [data-s]').forEach(b=>b.onclick=()=>setSurface(b.dataset.s));
+$('#pGear').onclick=()=>$('#pult').classList.add('open');
+$('#pGuide').onclick=()=>$('#guide').classList.toggle('on');
+$('#pReset').onclick=()=>{timers.forEach(t=>{clearTimeout(t);cancelAnimationFrame(t)});clearInterval(togglePlay.iv);const sf=S.surface;S=seed();S.surface=sf;closeSheet();startChat();renderPanel();toast('Демо сброшено')};
+$('#pTheme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.theme?r.dataset.theme==='dark':matchMedia('(prefers-color-scheme:dark)').matches;r.dataset.theme=dark?'light':'dark';$('#pTheme').innerHTML=ic(dark?'moon':'sun')+'<span class="t">Светлая / тёмная</span>'};
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();$('#guide').classList.remove('on')}});
+document.addEventListener('click',e=>{if(!e.target.closest('#guide,#pGuide'))$('#guide').classList.remove('on');if(!e.target.closest('#pult'))$('#pult').classList.remove('open')});
+
+setSurface('owner');startChat();
+</script>
+</body>
+</html>
