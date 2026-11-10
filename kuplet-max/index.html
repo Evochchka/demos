@@ -590,9 +590,9 @@ function launch(full,fixOrder){
   const tick=()=>{
     const p=Math.min(100,(performance.now()-t0)/dur*100);m.progress=p;o.prog=p;
     patchProgress(m);if(S.surface!=='bot')patchAdminProg(o);
-    if(p<100){timers.push(requestAnimationFrame(tick))}else finish(m,o);
+    if(p<100){timers.push(setTimeout(tick,60))}else finish(m,o);
   };
-  timers.push(requestAnimationFrame(tick));
+  timers.push(setTimeout(tick,60));
   renderPanel();
 }
 function finish(m,o){
