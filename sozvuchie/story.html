@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Созвучие — схема продукта</title>
+<link rel="stylesheet" href="fonts.css">
+<style>
+:root{--bg:#ECEEF4;--panel:#fff;--ink:#161A2E;--muted:#5C6178;--line:#DADDE7;--rasp:#D92E66;--cob:#2F5BEA;--teal:#0E8F79;--blend:multiply}
+@media (prefers-color-scheme:dark){:root{--bg:#10121C;--panel:#1A1D2B;--ink:#ECEEF6;--muted:#9AA0B6;--line:#2C3045;--rasp:#F0507F;--cob:#6A8CFF;--teal:#3CC7A8;--blend:screen}}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--ink);font:17px/1.55 'Onest',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+.wrap{max-width:1120px;margin:0 auto;padding:40px 16px 70px}
+a{color:inherit}
+.back{font-size:14px;color:var(--muted)}
+h1{font:600 48px/1.08 'Literata',serif;letter-spacing:-.02em;margin:18px 0 12px;max-width:18ch;text-wrap:balance}
+.lead{color:var(--muted);max-width:60ch;font-size:19px}
+.poster{display:grid;grid-template-columns:1fr auto 1.3fr auto 1fr;gap:18px;align-items:stretch;margin:40px 0 56px}
+.col{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:22px}
+.col h2{font:600 22px 'Literata',serif;margin-bottom:10px}
+.col ul{list-style:none;display:grid;gap:8px;font-size:15px}
+.col li{padding-left:16px;position:relative}
+.col li::before{content:"";position:absolute;left:0;top:9px;width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.col.sys{border-color:var(--rasp)}
+.col.sys li::before{background:var(--rasp)}
+.col.out li::before{background:var(--teal)}
+.arr{display:grid;place-items:center;color:var(--muted)}
+.arr svg{width:30px;height:30px;fill:none;stroke:currentColor;stroke-width:1.8}
+.lens{position:relative;width:110px;height:64px;margin-bottom:12px}
+.lens i{position:absolute;top:0;width:64px;height:64px;border-radius:50%;mix-blend-mode:var(--blend)}
+.lens i:first-child{left:0;background:var(--rasp)}.lens i:last-child{right:0;background:var(--cob)}
+.step{display:grid;grid-template-columns:312px 1fr;gap:48px;align-items:center;padding:36px 0;border-top:1px solid var(--line)}
+.fr{width:312px;height:624px;overflow:hidden;border-radius:36px}.fr iframe{width:390px;height:780px;border:0;transform:scale(.8);transform-origin:0 0;display:block;background:transparent}
+.step .n{font:600 20px 'Literata',serif;color:var(--rasp)}
+.step h3{font:600 32px/1.15 'Literata',serif;margin:6px 0 12px;text-wrap:balance}
+.step p{color:var(--muted);max-width:56ch}
+.why{margin-top:16px;padding:14px 16px;border-left:3px solid var(--teal);background:var(--panel);border-radius:0 12px 12px 0;font-size:15px;max-width:56ch}
+.why b{color:var(--teal)}
+.stages{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:20px}
+.stg{background:var(--panel);border:1px solid var(--line);border-radius:20px;padding:22px}
+.stg h4{font:600 21px 'Literata',serif;margin-bottom:4px}
+.stg .p{font-weight:600;margin-bottom:10px}
+.stg ul{list-style:none;font-size:15px;color:var(--muted);display:grid;gap:5px}
+h2.sec{font:600 34px 'Literata',serif;margin-top:40px}
+.cta{margin-top:36px;display:flex;gap:12px;flex-wrap:wrap}
+.cta a{padding:13px 20px;border-radius:14px;background:var(--ink);color:var(--bg);text-decoration:none;font-weight:600}
+.cta a.g{background:transparent;color:var(--ink);border:1px solid var(--line)}
+@media(max-width:860px){.poster{grid-template-columns:1fr}.arr{transform:rotate(90deg);height:30px}.step{grid-template-columns:1fr;gap:20px}.fr{margin:0 auto}.stages{grid-template-columns:1fr}h1{font-size:34px}}
+</style>
+</head>
+<body><div class="wrap">
+<a class="back" href="./">Вернуться в демо</a>
+<h1>Как работает Созвучие: от анкеты до первой встречи</h1>
+<p class="lead">Мини-приложение в Telegram, где пару подбирают по ценностям, а не по фото. Сначала запуск в Telegram, когда наберётся аудитория — мобильное приложение на том же сервере.</p>
+
+<div class="poster">
+  <div class="col"><h2>Что приходит</h2><ul><li>Человек открывает мини-апп из Telegram, без установки</li><li>Анкета, 1–3 фото</li><li>Ответы на 5 вопросов о главном</li><li>Селфи для проверки</li></ul></div>
+  <div class="arr"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>
+  <div class="col sys"><div class="lens"><i></i><i></i></div><h2>Что делает система</h2><ul><li>Считает совместимость по ответам и поведению</li><li>Каждую ночь собирает 5 анкет на завтра</li><li>ИИ проверяет фото и тексты на фейки и спам</li><li>ИИ предлагает первые вопросы по общим интересам</li></ul></div>
+  <div class="arr"><svg viewBox="0 0 24 24"><path d="M4 12h15M13 6l6 6-6 6"/></svg></div>
+  <div class="col out"><h2>Что получается</h2><ul><li>Люди видят, почему подходят друг другу</li><li>Меньше пустых мэтчей и фейков</li><li>Premium за реальную пользу, не за доступ</li><li>Инвестор видит рост и экономику в панели</li></ul></div>
+</div>
+
+<section class="step"><div class="fr"><iframe src="./?embed=1&s=feed" title="Подборка дня с процентом совместимости" loading="lazy" tabindex="-1"></iframe></div><div><span class="n">1</span><h3>Подборка дня вместо бесконечных свайпов</h3>
+<p>Пять анкет в день, отсортированных по совместимости. У каждой видно, в чём вы совпали и где разошлись. Это главное отличие от обычных ботов знакомств.</p>
+<p class="why"><b>Зачем:</b> пользователь тратит 3 минуты в день и возвращается завтра. Ограничение создаёт привычку и повод купить Premium.</p></div></section>
+
+<section class="step"><div class="fr"><iframe src="./?embed=1&preset=story&s=chats" title="Взаимная симпатия" loading="lazy" tabindex="-1"></iframe></div><div><span class="n">2</span><h3>Взаимная симпатия открывает чат</h3>
+<p>Писать можно только тем, с кем симпатия взаимная. Экран мэтча показывает, по скольким вопросам вы совпали.</p>
+<p class="why"><b>Зачем:</b> нет спама в личку, и девушки остаются в сервисе. Это главная причина оттока в ботах знакомств.</p></div></section>
+
+<section class="step"><div class="fr"><iframe src="./?embed=1&preset=story&s=chat:1" title="Чат с подсказками ИИ" loading="lazy" tabindex="-1"></iframe></div><div><span class="n">3</span><h3>ИИ помогает начать разговор</h3>
+<p>Над полем ввода три вопроса, собранные по общим интересам из анкет. Нажал — отправил. Переписку ИИ не ведёт и не читает за человека.</p>
+<p class="why"><b>Зачем:</b> больше мэтчей превращается в диалог, а диалоги в встречи. Это метрика, которую спросит инвестор.</p></div></section>
+
+<section class="step"><div class="fr"><iframe src="./?embed=1&s=verify" title="Проверка селфи" loading="lazy" tabindex="-1"></iframe></div><div><span class="n">4</span><h3>Проверка селфи против фейков</h3>
+<p>Селфи с заданным жестом сравнивается с фото анкеты. У проверенных анкет отметка в подборке. Спорные случаи уходят в очередь модерации, решает человек.</p>
+<p class="why"><b>Зачем:</b> доверие. В 2026 году ботов знакомств в Telegram обсуждают из-за анонимных анкет, поэтому проверка — аргумент для пользователя и инвестора.</p></div></section>
+
+<section class="step"><div class="fr"><iframe src="./?embed=1&s=likes" title="Кто вас отметил" loading="lazy" tabindex="-1"></iframe></div><div><span class="n">5</span><h3>Premium за пользу: кто отметил и ещё 10 анкет</h3>
+<p>Оплата картой через ЮKassa или Telegram Stars прямо в мини-аппе. Неделя, месяц, три месяца, плюс разовые суперсимпатии.</p>
+<p class="why"><b>Зачем:</b> деньги с первого месяца. У лидеров рынка 80–85% выручки — подписки.</p></div></section>
+
+<h2 class="sec">Как запускаем</h2>
+<div class="stages">
+  <div class="stg"><h4>Старт</h4><p class="p">2,5 недели</p><ul><li>Анкета и 5 вопросов</li><li>Совместимость и подборка дня</li><li>Мэтчи и чат</li><li>Сервер в РФ, согласия по 152-ФЗ</li></ul></div>
+  <div class="stg"><h4>Под инвестора</h4><p class="p">+1,5 недели</p><ul><li>Проверка селфи и модерация</li><li>Premium: карта и Stars</li><li>ИИ-подсказки в чате</li><li>Панель роста и экономики</li></ul></div>
+  <div class="stg"><h4>Мобильное приложение</h4><p class="p">когда пойдёт рост</p><ul><li>iOS и Android на том же сервере</li><li>Пуш-уведомления</li><li>Публикация в сторах</li></ul></div>
+</div>
+<div class="cta"><a href="./">Открыть демо</a><a class="g" href="./?mode=admin">Панель для инвестора</a></div>
+</div></body></html>
