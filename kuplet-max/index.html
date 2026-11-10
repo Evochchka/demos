@@ -137,6 +137,22 @@ h1,h2,h3{font-family:var(--fd);font-weight:600;letter-spacing:-.01em;text-wrap:b
 .banner .big{position:absolute;right:14px;top:10px;width:64px;height:64px;opacity:.95;color:#FFD25E}
 .banner .big svg{width:100%;height:100%;stroke-width:1.4}
 
+
+.clip{position:relative;aspect-ratio:9/16;max-height:340px;border-radius:16px;overflow:hidden;background:#140F2E;color:#fff}
+.cf{position:absolute;inset:0;opacity:0;animation:cf 9s infinite}
+.f1{background:radial-gradient(circle at 30% 30%,#FF6A44,transparent 55%),linear-gradient(160deg,#2A1F78,#6B2AA8)}
+.f2{background:radial-gradient(circle at 70% 40%,#FFD25E,transparent 50%),linear-gradient(200deg,#0E8F78,#2A1F78);animation-delay:3s}
+.f3{background:radial-gradient(circle at 50% 70%,#E8431D,transparent 55%),linear-gradient(120deg,#6B2AA8,#140F2E);animation-delay:6s}
+@keyframes cf{0%,30%{opacity:1;transform:scale(1.08)}33%,100%{opacity:0;transform:scale(1)}}
+.cl{position:absolute;left:14px;right:14px;bottom:52px;font:600 15px/1.3 var(--fd)}
+.cl span{display:block;opacity:0;animation:cl 9s infinite}
+.cl span:nth-child(2){animation-delay:3s}.cl span:nth-child(3){animation-delay:6s}
+@keyframes cl{0%,30%{opacity:1}33%,100%{opacity:0}}
+.cl span{position:absolute;bottom:0}
+.ct{position:absolute;left:14px;top:12px;font:600 13px var(--fd);opacity:.9}
+.cplay{position:absolute;right:12px;bottom:12px;width:40px;height:40px;border-radius:50%;background:rgba(255,255,255,.18);color:#fff;display:grid;place-items:center}
+.clip.paused .cf,.clip.paused .cl span{animation-play-state:paused}
+
 /* панели */
 .pHead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px;flex-wrap:wrap}
 .pHead h1{font-size:clamp(24px,3vw,34px);line-height:1.05}
@@ -411,10 +427,10 @@ input[type=range]{width:100%;accent-color:var(--acc)}
   <h3>Что нажать за 2 минуты</h3>
   <ol>
     <li>«Создать песню»: повод, жанр, голос, история. Бот спросит ударение в имени.</li>
-    <li>Сделайте демо, потом «Полная версия» и оплата.</li>
+    <li>Сделайте демо, потом «Полная версия» и оплата. Потом «Клип к песне»: бот смонтирует видео со звуком.</li>
     <li>«Админка владельца»: цифры, проверка песен, выплаты.</li>
     <li>«Рассылки»: уберите согласие или поднимите скорость и смотрите риск блокировки.</li>
-    <li>Справа страхи Павла: кнопка покажет ответ в боте.</li>
+    <li>Справа страхи клиента: кнопка покажет ответ в боте.</li>
   </ol>
   <p class="note2">Все данные вымышленные. Ничего не сохраняется и не отправляется.</p>
 </aside>
@@ -478,15 +494,18 @@ function addTimer(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t}
 /* ---------- чат ---------- */
 function say(m){m.ts=m.ts||new Date(2026,10,10,16,40+S.chat.length%20).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});m.id=m.id||('m'+Math.random().toString(36).slice(2,8));S.chat.push(m);renderChat(true);return m}
 function banner(t,sub,icon){return `<div class="banner"><span class="big" aria-hidden="true">${ic(icon)}</span><b>${t}</b><span>${sub}</span></div>`}
+function clipHtml(m){const o=ordById(m.clip);const nm=esc(o?o.name:'вас');
+  return `<div class="clip" data-clip><div class="cf f1"></div><div class="cf f2"></div><div class="cf f3"></div><div class="cl"><span>С днём рождения, ${nm}</span><span>Пусть утро пахнет кофе</span><span>А опоздания — к счастью</span></div><b class="ct">«${nm}»</b><button class="cplay" data-a="clipplay" aria-label="Смотреть клип">${ic('play')}</button></div><div class="bub"><b>Клип готов</b><small>Вертикальное видео 9:16 со звуком и текстом песни: для сторис и пересылки.</small></div>`}
 function renderMsg(m){
   if(m.mail)m=Object.assign({},m,mailData());if(m.adm)m=Object.assign({},m,admData());if(m.prc)m=Object.assign({},m,prcData());if(m.par)m=Object.assign({},m,parData());
   if(m.t==='me')return `<div class="msg me" data-m="${m.id}"><div class="bub">${esc(m.text)}<span class="ts">${m.ts||''}</span></div></div>`;
   let h='';
-  if(m.hero)h+=banner('Песня о вас за три минуты','Расскажите историю, остальное сделаю я. Первое демо бесплатно','music');
+  if(m.hero)h+=banner('Песня и клип о вас','Расскажите историю: напишу песню, сведу звук и смонтирую клип','music');
   if(m.text)h+=`<div class="bub">${m.text}<span class="ts">${m.ts||''}</span></div>`;
   if(m.sum)h+=`<div class="bub"><dl class="sum">${m.sum.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl></div>`;
   if(m.progress!==undefined)h+=progressHtml(m);
   if(m.result)h+=resultHtml(m);
+  if(m.clip)h+=clipHtml(m);
   if(m.link)h+=banner('Пригласи друга','За каждых 5 дарим песню','gift')+`<div class="bub"><b>Ваша ссылка</b><div class="link">${ic('link')}<span>max.ru/kuplet_bot?start=ref_${m.link}</span></div><small>За каждых 5 друзей даём песню в подарок.</small>${meterHtml()}</div>`;
   if(m.bal)h+=banner('Баланс','Песни и бесплатные демо','wallet')+`<div class="bub"><b>Баланс</b><small>Песен на счёте: <span class="num">${S.songs}</span></small><small>Бесплатных демо сегодня: <span class="num">${S.freeLeft}</span> из ${S.freeLimit}. Обновление в 00:00 МСК.</small><div class="meter"><i style="width:${S.freeLimit?S.freeLeft/S.freeLimit*100:0}%"></i></div></div>`;
   if(m.mine)h+=minesHtml();
@@ -494,7 +513,7 @@ function renderMsg(m){
   return `<div class="msg bot" data-m="${m.id}">${h}</div>`;
 }
 function meterHtml(){const r=S.friends%5;return `<small>Приглашено: <span class="num">${S.friends}</span>. Подарочных песен: <span class="num">${S.gifted}</span>. До следующей: <span class="num">${5-r}</span>.</small><div class="meter"><i style="width:${r/5*100}%"></i></div>`}
-function minesHtml(){const mine=S.orders.filter(o=>o.mine);if(!mine.length)return `<div class="bub">Пока пусто. Создайте первую песню.</div>`;return `<div class="bub">${mine.map(o=>`<div style="padding:4px 0"><b>«Для ${esc(o.name)}»</b> <span class="tag ${o.paid?'full':'demo'}">${o.paid?'полная 2:41':'демо 0:30'}</span><small>${OCC[o.occ]}, ${o.gen}</small></div>`).join('')}</div>`}
+function minesHtml(){const mine=S.orders.filter(o=>o.mine);if(!mine.length)return `<div class="bub">Пока пусто. Создайте первую песню.</div>`;return `<div class="bub">${mine.map(o=>`<div style="padding:4px 0"><b>«${esc(o.name)}»</b> <span class="tag ${o.paid?'full':'demo'}">${o.paid?'полная 2:41':'демо 0:30'}</span><small>${OCC[o.occ]}, ${o.gen}</small></div>`).join('')}</div>`}
 function stagesFor(p){const st=['Пишу текст','Подбираю мелодию','Записываю голос','Свожу трек'];const k=p<25?0:p<55?1:p<85?2:3;return st.map((s,i)=>`<span class="${i<k?'done':i===k?'on':''}">${i<k?ic('check'):i===k?ic('sparkles'):ic('clock')}${s}</span>`).join('')}
 function staffSvg(p){
   let notes='';const n=Math.floor(p/100*14);
@@ -503,7 +522,7 @@ function staffSvg(p){
 function progressHtml(m){const p=Math.round(m.progress);return `<div class="bub" data-prog="${m.id}"><b>${m.title||'Делаю песню'}</b> <span class="num" data-pc>${p}%</span>${staffSvg(p)}<div class="stg" data-stg>${stagesFor(p)}</div></div>`}
 function resultHtml(m){
   const o=ordById(m.result);const full=o&&o.paid;const w=wave(o?o.id:1,34);const pl=S.audio[m.id]||0;
-  return `<div class="bub"><b>«Для ${esc(o?o.name:'вас')}»</b> <span class="tag ${full?'full':'demo'}">${full?'полная версия 2:41':'демо 0:30'}</span>
+  return `<div class="bub"><b>песня «${esc(o?o.name:"для вас")}»</b> <span class="tag ${full?'full':'demo'}">${full?'полная версия 2:41':'демо 0:30'}</span>
   <div class="player" style="margin-top:8px"><button class="play" data-a="play" data-v="${m.id}" aria-label="${pl?'Пауза':'Слушать'}">${ic(pl?'pause':'play')}</button><div class="wave" data-w="${m.id}">${w.map((h,i)=>`<i style="height:${h}px" class="${pl&&i<pl?'on':''}"></i>`).join('')}</div></div>
   <small>${full?'Без водяного знака, можно скачать и переслать.':'Демо с голосовой меткой. В полной версии 2 минуты 41 секунда.'}</small></div>`}
 function renderChat(scroll){
@@ -580,7 +599,7 @@ function finish(m,o){
   o.st='ready';o.prog=100;S.flow.step='done';
   m.done=true;
   const idx=S.chat.indexOf(m);S.chat.splice(idx,1,{id:m.id,text:'Готово!'});
-  say({result:o.id,id:'r'+o.id+'_'+Date.now(),opts:[o.paid?{l:'Отправить другу',a:'inv',i:'share-2',cls:'pri'}:{l:'Полная версия, '+rub(S.price),a:'buy',v:String(o.id),cls:'pri',i:'wallet'},{l:`Исправить (${o.fixes} из 3)`,a:'fix',v:String(o.id),i:'refresh-cw'},{l:'Главное меню',a:'menu',i:'layout-dashboard'}]});
+  say({result:o.id,id:'r'+o.id+'_'+Date.now(),opts:[o.paid?{l:'Отправить другу',a:'inv',i:'share-2',cls:'pri'}:{l:'Полная версия, '+rub(S.price),a:'buy',v:String(o.id),cls:'pri',i:'wallet'},{l:'Клип к песне, 290 ₽',a:'clip',v:String(o.id),i:'play'},{l:`Исправить (${o.fixes} из 3)`,a:'fix',v:String(o.id),i:'refresh-cw'},{l:'Главное меню',a:'menu',i:'layout-dashboard'}]});
   renderPanel();
 }
 function patchProgress(m){
@@ -614,8 +633,8 @@ function pay(){
   if(o){o.paid=true;o.amount=amt;
     const p=partnerById(o.partner);if(p){const cut=amt*S.share/100;p.earned+=cut;p.paid++;t.toPartners+=cut}
     say({t:'me',text:'Оплатил полную версию'});
-    say({text:`Оплата прошла. Полная версия <b>«Для ${esc(o.name)}»</b> готова: 2 минуты 41 секунда.`});
-    say({result:o.id,id:'r'+o.id+'_'+Date.now(),opts:[{l:'Отправить другу',a:'inv',i:'share-2',cls:'pri'},{l:'Главное меню',a:'menu',i:'layout-dashboard'}]});
+    say({text:`Оплата прошла. Полная версия <b>«${esc(o.name)}»</b> готова: 2 минуты 41 секунда.`});
+    say({result:o.id,id:'r'+o.id+'_'+Date.now(),opts:[{l:'Клип к песне, 290 ₽',a:'clip',v:String(o.id),i:'play'},{l:'Отправить другу',a:'inv',i:'share-2',cls:'pri'},{l:'Главное меню',a:'menu',i:'layout-dashboard'}]});
   }else{S.songs++;const p=partnerById(ME);const cut=amt*S.share/100;p.earned+=cut;p.paid++;t.toPartners+=cut;say({t:'me',text:'Купил песню'});say({text:'Песня на балансе. Создавайте!',opts:[{l:'Создать песню',a:'new',i:'music',cls:'pri'}]})}
   toast('Оплата прошла, заказ обновлён в панели');renderPanel();
 }
@@ -650,9 +669,9 @@ const FEARS=[
  ['«Нужно быстро, а деньги считаем»','Показываем цифры сразу: сколько остаётся с одной песни и сколько уходит партнёру. Запуск по этапам: демо, тест на своей аудитории, рост.','par','Кабинет паблика']
 ];
 function fearsView(){
-  return `<div class="pHead"><div><h1>Страхи и как бот их закрывает</h1><p>Из переписки с Павлом, 10 ноября. Нажмите кнопку: бот покажет ответ в чате.</p></div></div>
+  return `<div class="pHead"><div><h1>Страхи и как бот их закрывает</h1><p>Нажмите кнопку: бот покажет ответ в чате.</p></div></div>
   <div class="rows fearList">${FEARS.map((f,i)=>`<div style="align-items:flex-start"><div class="grow"><b>${f[0]}</b><span>${f[1]}</span></div><button class="pill sm" data-f="${i}">${f[3]}</button></div>`).join('')}</div>
-  <p class="note2">Все данные вымышленные, ничего не отправляется. Голосовые Павла доучтём в списке.</p>`;
+  <p class="note2">Все данные вымышленные, ничего не отправляется. </p>`;
 }
 function riskLevel(){let r=0;if(!S.optin)r+=3;if(!S.unsub)r+=2;if(!S.night)r+=1;if(S.limit>40)r+=3;else if(S.limit>25)r+=1;return r}
 function riskInfo(){const r=riskLevel();return r>=4?{k:'high',t:'высокий'}:r>=2?{k:'mid',t:'средний'}:{k:'low',t:'низкий'}}
@@ -693,6 +712,8 @@ function extra(a,v,mid){
     case 'pr':{const n=S.price+ +v;if(n<50||n>5000){toast('Цена от 50 до 5 000 ₽');break}S.price=n;renderChat();toast('Цена в боте: '+rub(n));break}
     case 'sh':S.share=Math.max(10,Math.min(90,S.share+ +v));renderChat();break;
     case 'fixq':{const o=S.orders.find(x=>x.st==='fix');if(!o){say({text:'Песен на проверке нет.',opts:[{l:'Админка',a:'adm'}]});break}say({text:`<b>Заказ № ${o.id}, ${esc(o.name)}</b><small>${esc(o.note||'')}</small><small>${esc(o.story)}</small>`,opts:[{l:'Исправить и выдать клиенту',a:'fixok',v:String(o.id),cls:'pri',i:'check'},{l:'Админка',a:'adm'}]});break}
+    case 'clip':{const o=ordById(+v);say({t:'me',text:'Клип к песне'});const m2=say({text:'Монтирую клип: обложка, кадры и текст песни под музыку…'});addTimer(()=>{m2.text='Клип смонтирован. Демо-оплата 290 ₽ прошла.';S.today.revenue+=290;say({clip:o.id,opts:[{l:'Отправить другу',a:'inv',i:'share-2',cls:'pri'},{l:'Главное меню',a:'menu'}]});renderChat(true)},matchMedia('(prefers-reduced-motion:reduce)').matches?200:2200);break}
+    case 'clipplay':{const c=[...document.querySelectorAll('[data-clip]')].pop();if(c)c.classList.toggle('paused');break}
     case 'fixok':{const o=ordById(+v);o.st='ready';o.note=null;say({text:`Песня № ${o.id} выдана клиенту.`,opts:[{l:'Админка',a:'adm',i:'layout-dashboard'}]});break}
     case 'pays':{const l=S.partners.filter(p=>p.req);if(!l.length){say({text:'Заявок на выплату нет.',opts:[{l:'Админка',a:'adm'}]});break}say({text:'<b>Заявки на выплату</b>'+l.map(p=>`<small>${esc(p.name)}: ${rub(p.earned-p.out)}</small>`).join(''),opts:l.map(p=>({l:'Выплатить '+p.name,a:'pay1',v:p.id,cls:'pri'})).concat([{l:'Админка',a:'adm'}])});break}
     case 'pay1':{const p=partnerById(v);p.out=p.earned;p.req=false;say({text:'Выплачено: '+esc(p.name)+'. Чек самозанятого сформирован.',opts:[{l:'Админка',a:'adm'}]});break}
