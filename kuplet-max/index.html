@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ru" data-surface="owner">
+<html lang="ru" data-surface="bot">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -113,6 +113,30 @@ h1,h2,h3{font-family:var(--fd);font-weight:600;letter-spacing:-.01em;text-wrap:b
 .bigBtn:active{transform:scale(.98)}
 .ghostBtn{width:100%;padding:12px;margin-top:6px;color:var(--ink2);font-size:14px}
 
+
+/* MAX-подобные кнопки и баннеры */
+:root{--btn:#DFE6F5;--btnInk:#0F1A33}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--btn:#3A2740;--btnInk:#FFE9E2}}
+:root[data-theme="dark"]{--btn:#3A2740;--btnInk:#FFE9E2}
+.msg{max-width:92%;width:min(92%,330px)}
+.msg.me{width:auto}
+.bub{border-radius:14px;position:relative}
+.bot .bub{border-bottom-left-radius:6px}
+.ts{display:block;text-align:right;font-size:11px;color:var(--ink2);margin-top:2px}
+.me .ts{color:inherit;opacity:.7}
+.opts{flex-direction:column;gap:3px}
+.opt{width:100%;border-radius:12px;padding:11px 14px;border:0;background:var(--btn);color:var(--btnInk);text-align:center;font-weight:550;display:flex;align-items:center;justify-content:center;gap:6px}
+.opt:hover{background:color-mix(in srgb,var(--btn) 82%,var(--acc))}
+.opt.pri{background:var(--acc);color:var(--accInk)}
+.opt.sel{background:var(--sel);color:var(--selInk)}
+.opt .i{margin:0}
+.banner{border-radius:14px;aspect-ratio:16/7;position:relative;overflow:hidden;background:linear-gradient(135deg,#2A1F78 0%,#6B2AA8 45%,#E8431D 125%);color:#fff;display:flex;flex-direction:column;justify-content:flex-end;padding:12px 16px;border:1px solid rgba(255,255,255,.12)}
+.banner:before{content:"";position:absolute;inset:0;background:repeating-linear-gradient(to bottom,transparent 0 13px,rgba(255,255,255,.2) 13px 14px);-webkit-mask-image:linear-gradient(to bottom,transparent 8%,#000 45%,transparent 92%);mask-image:linear-gradient(to bottom,transparent 8%,#000 45%,transparent 92%)}
+.banner b{position:relative;font:700 24px/1 var(--fd);letter-spacing:-.01em}
+.banner span{position:relative;font-size:12.5px;opacity:.85;margin-top:3px}
+.banner .big{position:absolute;right:14px;top:10px;width:64px;height:64px;opacity:.95;color:#FFD25E}
+.banner .big svg{width:100%;height:100%;stroke-width:1.4}
+
 /* панели */
 .pHead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:14px;flex-wrap:wrap}
 .pHead h1{font-size:clamp(24px,3vw,34px);line-height:1.05}
@@ -224,8 +248,6 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 @media (max-width:1180px){.strip{grid-template-columns:repeat(2,1fr)}.strip>div:nth-child(2){border-right:0;margin-right:0}.two{grid-template-columns:1fr}.stage{gap:28px;padding-left:24px}}
 @media (max-width:980px){
   .stage{grid-template-columns:minmax(0,1fr);padding:12px 14px 90px;gap:0}
-  html[data-surface="bot"] .panel{display:none}
-  html:not([data-surface="bot"]) .phoneWrap{display:none}
   .phoneWrap{position:static;height:auto;padding-top:4px}
   .phone{height:calc(100vh - 110px);min-height:520px;border-radius:30px}
   .pult{right:12px;top:auto;bottom:14px;transform:none;flex-direction:row;border-radius:999px}
@@ -335,55 +357,7 @@ input[type=range]{width:100%;accent-color:var(--acc)}
   <path d="M8 12H3" />
 </svg></button>
   <div class="grp" style="display:contents">
-    <button data-s="bot" aria-label="Бот в MAX" class="sbot"><svg
-  class="i" aria-hidden="true"
-  xmlns="http://www.w3.org/2000/svg"
- 
- 
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  stroke-width="2"
-  stroke-linecap="round"
-  stroke-linejoin="round"
->
-  <rect width="14" height="20" x="5" y="2" rx="2" ry="2" />
-  <path d="M12 18h.01" />
-</svg><span class="t">Бот в MAX</span></button>
-    <button data-s="partner" aria-label="Кабинет партнёра"><svg
-  class="i" aria-hidden="true"
-  xmlns="http://www.w3.org/2000/svg"
- 
- 
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  stroke-width="2"
-  stroke-linecap="round"
-  stroke-linejoin="round"
->
-  <path d="M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z" />
-  <path d="M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14" />
-  <path d="M8 6v8" />
-</svg><span class="t">Кабинет партнёра</span></button>
-    <button data-s="owner" aria-label="Панель владельца"><svg
-  class="i" aria-hidden="true"
-  xmlns="http://www.w3.org/2000/svg"
- 
- 
-  viewBox="0 0 24 24"
-  fill="none"
-  stroke="currentColor"
-  stroke-width="2"
-  stroke-linecap="round"
-  stroke-linejoin="round"
->
-  <rect width="7" height="9" x="3" y="3" rx="1" />
-  <rect width="7" height="5" x="14" y="3" rx="1" />
-  <rect width="7" height="9" x="14" y="12" rx="1" />
-  <rect width="7" height="5" x="3" y="16" rx="1" />
-</svg><span class="t">Панель владельца</span></button>
-    <div class="sep"></div>
+    
     <button id="pTheme" aria-label="Тема"><svg
   class="i" aria-hidden="true"
   xmlns="http://www.w3.org/2000/svg"
@@ -436,13 +410,13 @@ input[type=range]{width:100%;accent-color:var(--acc)}
 <aside class="guide" id="guide">
   <h3>Что нажать за 2 минуты</h3>
   <ol>
-    <li>В боте: «Создать песню», повод, жанр, голос, история.</li>
-    <li>Подтвердите ударение в имени и запустите демо. Заказ появится в панели владельца.</li>
-    <li>Нажмите «Полная версия» и оплатите. Выручка и заработок партнёра вырастут.</li>
-    <li>В «Ценах» поменяйте цену: в боте она обновится.</li>
-    <li>В «Рассылках» двигайте лимит и смотрите риск блокировки.</li>
+    <li>«Создать песню»: повод, жанр, голос, история. Бот спросит ударение в имени.</li>
+    <li>Сделайте демо, потом «Полная версия» и оплата.</li>
+    <li>«Админка владельца»: цифры, проверка песен, выплаты.</li>
+    <li>«Рассылки»: уберите согласие или поднимите скорость и смотрите риск блокировки.</li>
+    <li>Справа страхи Павла: кнопка покажет ответ в боте.</li>
   </ol>
-  <p class="note2">Все данные вымышленные. Ничего не сохраняется и никуда не отправляется.</p>
+  <p class="note2">Все данные вымышленные. Ничего не сохраняется и не отправляется.</p>
 </aside>
 <div class="toast" id="toast" role="status"></div>
 
@@ -453,7 +427,7 @@ const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'
 const NB=' ';
 const rub=n=>Math.round(n).toLocaleString('ru-RU').replace(/\s/g,NB)+NB+'₽';
 const num=n=>Math.round(n).toLocaleString('ru-RU').replace(/\s/g,NB);
-const IC={"banknote": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\" />\n  <circle cx=\"12\" cy=\"12\" r=\"2\" />\n  <path d=\"M6 12h.01M18 12h.01\" />\n</svg>", "check": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M20 6 9 17l-5-5\" />\n</svg>", "chevron-left": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"m15 18-6-6 6-6\" />\n</svg>", "circle-help": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"10\" />\n  <path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\" />\n  <path d=\"M12 17h.01\" />\n</svg>", "clock": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"10\" />\n  <path d=\"M12 6v6l4 2\" />\n</svg>", "copy": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" />\n  <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />\n</svg>", "ellipsis-vertical": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"1\" />\n  <circle cx=\"12\" cy=\"5\" r=\"1\" />\n  <circle cx=\"12\" cy=\"19\" r=\"1\" />\n</svg>", "gift": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M12 7v14\" />\n  <path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\" />\n  <path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\" />\n  <rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\" />\n</svg>", "headphones": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3\" />\n</svg>", "layout-dashboard": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\" />\n  <rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\" />\n</svg>", "link": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" />\n  <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />\n</svg>", "list-music": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M16 5H3\" />\n  <path d=\"M11 12H3\" />\n  <path d=\"M11 19H3\" />\n  <path d=\"M21 16V5\" />\n  <circle cx=\"18\" cy=\"16\" r=\"3\" />\n</svg>", "megaphone": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M11 6a13 13 0 0 0 8.4-2.8A1 1 0 0 1 21 4v12a1 1 0 0 1-1.6.8A13 13 0 0 0 11 14H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z\" />\n  <path d=\"M6 14a12 12 0 0 0 2.4 7.2 2 2 0 0 0 3.2-2.4A8 8 0 0 1 10 14\" />\n  <path d=\"M8 6v8\" />\n</svg>", "moon": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401\" />\n</svg>", "music": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M21 16V3a1 1 0 0 0-1.28-.96l-10 2.917a1 1 0 0 0-.72.96V19\" />\n  <circle cx=\"18\" cy=\"16\" r=\"3\" />\n  <circle cx=\"6\" cy=\"19\" r=\"3\" />\n</svg>", "pause": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect x=\"14\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\" />\n  <rect x=\"5\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\" />\n</svg>", "play": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z\" />\n</svg>", "refresh-cw": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\" />\n  <path d=\"M21 3v5h-5\" />\n  <path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\" />\n  <path d=\"M8 16H3v5\" />\n</svg>", "send": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" />\n  <path d=\"m21.854 2.147-10.94 10.939\" />\n</svg>", "share-2": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"18\" cy=\"5\" r=\"3\" />\n  <circle cx=\"6\" cy=\"12\" r=\"3\" />\n  <circle cx=\"18\" cy=\"19\" r=\"3\" />\n  <line x1=\"8.59\" x2=\"15.42\" y1=\"13.51\" y2=\"17.49\" />\n  <line x1=\"15.41\" x2=\"8.59\" y1=\"6.51\" y2=\"10.49\" />\n</svg>", "shield-check": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\" />\n  <path d=\"m9 12 2 2 4-4\" />\n</svg>", "sliders-horizontal": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M10 5H3\" />\n  <path d=\"M12 19H3\" />\n  <path d=\"M14 3v4\" />\n  <path d=\"M16 17v4\" />\n  <path d=\"M21 12h-9\" />\n  <path d=\"M21 19h-5\" />\n  <path d=\"M21 5h-7\" />\n  <path d=\"M8 10v4\" />\n  <path d=\"M8 12H3\" />\n</svg>", "smartphone": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"14\" height=\"20\" x=\"5\" y=\"2\" rx=\"2\" ry=\"2\" />\n  <path d=\"M12 18h.01\" />\n</svg>", "sparkles": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\" />\n  <path d=\"M20 2v4\" />\n  <path d=\"M22 4h-4\" />\n  <circle cx=\"4\" cy=\"20\" r=\"2\" />\n</svg>", "sun": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"4\" />\n  <path d=\"M12 2v2\" />\n  <path d=\"M12 20v2\" />\n  <path d=\"m4.93 4.93 1.41 1.41\" />\n  <path d=\"m17.66 17.66 1.41 1.41\" />\n  <path d=\"M2 12h2\" />\n  <path d=\"M20 12h2\" />\n  <path d=\"m6.34 17.66-1.41 1.41\" />\n  <path d=\"m19.07 4.93-1.41 1.41\" />\n</svg>", "triangle-alert": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\" />\n  <path d=\"M12 9v4\" />\n  <path d=\"M12 17h.01\" />\n</svg>", "users": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" />\n  <path d=\"M16 3.128a4 4 0 0 1 0 7.744\" />\n  <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" />\n  <circle cx=\"9\" cy=\"7\" r=\"4\" />\n</svg>", "wallet": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\" />\n  <path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\" />\n</svg>"};
+const IC={"banknote": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"20\" height=\"12\" x=\"2\" y=\"6\" rx=\"2\" />\n  <circle cx=\"12\" cy=\"12\" r=\"2\" />\n  <path d=\"M6 12h.01M18 12h.01\" />\n</svg>", "check": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M20 6 9 17l-5-5\" />\n</svg>", "chevron-left": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"m15 18-6-6 6-6\" />\n</svg>", "circle-help": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"10\" />\n  <path d=\"M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3\" />\n  <path d=\"M12 17h.01\" />\n</svg>", "clock": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"10\" />\n  <path d=\"M12 6v6l4 2\" />\n</svg>", "copy": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"14\" height=\"14\" x=\"8\" y=\"8\" rx=\"2\" ry=\"2\" />\n  <path d=\"M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2\" />\n</svg>", "ellipsis-vertical": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"1\" />\n  <circle cx=\"12\" cy=\"5\" r=\"1\" />\n  <circle cx=\"12\" cy=\"19\" r=\"1\" />\n</svg>", "gift": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M12 7v14\" />\n  <path d=\"M20 11v8a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-8\" />\n  <path d=\"M7.5 7a1 1 0 0 1 0-5A4.8 8 0 0 1 12 7a4.8 8 0 0 1 4.5-5 1 1 0 0 1 0 5\" />\n  <rect x=\"3\" y=\"7\" width=\"18\" height=\"4\" rx=\"1\" />\n</svg>", "headphones": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3\" />\n</svg>", "layout-dashboard": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect width=\"7\" height=\"9\" x=\"3\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"5\" x=\"14\" y=\"3\" rx=\"1\" />\n  <rect width=\"7\" height=\"9\" x=\"14\" y=\"12\" rx=\"1\" />\n  <rect width=\"7\" height=\"5\" x=\"3\" y=\"16\" rx=\"1\" />\n</svg>", "link": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71\" />\n  <path d=\"M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71\" />\n</svg>", "list-music": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M16 5H3\" />\n  <path d=\"M11 12H3\" />\n  <path d=\"M11 19H3\" />\n  <path d=\"M21 16V5\" />\n  <circle cx=\"18\" cy=\"16\" r=\"3\" />\n</svg>", "moon": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401\" />\n</svg>", "music": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M21 16V3a1 1 0 0 0-1.28-.96l-10 2.917a1 1 0 0 0-.72.96V19\" />\n  <circle cx=\"18\" cy=\"16\" r=\"3\" />\n  <circle cx=\"6\" cy=\"19\" r=\"3\" />\n</svg>", "pause": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <rect x=\"14\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\" />\n  <rect x=\"5\" y=\"3\" width=\"5\" height=\"18\" rx=\"1\" />\n</svg>", "play": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M5 5a2 2 0 0 1 3.008-1.728l11.997 6.998a2 2 0 0 1 .003 3.458l-12 7A2 2 0 0 1 5 19z\" />\n</svg>", "refresh-cw": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8\" />\n  <path d=\"M21 3v5h-5\" />\n  <path d=\"M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16\" />\n  <path d=\"M8 16H3v5\" />\n</svg>", "send": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z\" />\n  <path d=\"m21.854 2.147-10.94 10.939\" />\n</svg>", "share-2": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"18\" cy=\"5\" r=\"3\" />\n  <circle cx=\"6\" cy=\"12\" r=\"3\" />\n  <circle cx=\"18\" cy=\"19\" r=\"3\" />\n  <line x1=\"8.59\" x2=\"15.42\" y1=\"13.51\" y2=\"17.49\" />\n  <line x1=\"15.41\" x2=\"8.59\" y1=\"6.51\" y2=\"10.49\" />\n</svg>", "shield-check": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z\" />\n  <path d=\"m9 12 2 2 4-4\" />\n</svg>", "sliders-horizontal": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M10 5H3\" />\n  <path d=\"M12 19H3\" />\n  <path d=\"M14 3v4\" />\n  <path d=\"M16 17v4\" />\n  <path d=\"M21 12h-9\" />\n  <path d=\"M21 19h-5\" />\n  <path d=\"M21 5h-7\" />\n  <path d=\"M8 10v4\" />\n  <path d=\"M8 12H3\" />\n</svg>", "sparkles": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z\" />\n  <path d=\"M20 2v4\" />\n  <path d=\"M22 4h-4\" />\n  <circle cx=\"4\" cy=\"20\" r=\"2\" />\n</svg>", "sun": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <circle cx=\"12\" cy=\"12\" r=\"4\" />\n  <path d=\"M12 2v2\" />\n  <path d=\"M12 20v2\" />\n  <path d=\"m4.93 4.93 1.41 1.41\" />\n  <path d=\"m17.66 17.66 1.41 1.41\" />\n  <path d=\"M2 12h2\" />\n  <path d=\"M20 12h2\" />\n  <path d=\"m6.34 17.66-1.41 1.41\" />\n  <path d=\"m19.07 4.93-1.41 1.41\" />\n</svg>", "triangle-alert": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3\" />\n  <path d=\"M12 9v4\" />\n  <path d=\"M12 17h.01\" />\n</svg>", "users": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2\" />\n  <path d=\"M16 3.128a4 4 0 0 1 0 7.744\" />\n  <path d=\"M22 21v-2a4 4 0 0 0-3-3.87\" />\n  <circle cx=\"9\" cy=\"7\" r=\"4\" />\n</svg>", "wallet": "<svg\n  class=\"i\" aria-hidden=\"true\"\n  xmlns=\"http://www.w3.org/2000/svg\"\n \n \n  viewBox=\"0 0 24 24\"\n  fill=\"none\"\n  stroke=\"currentColor\"\n  stroke-width=\"2\"\n  stroke-linecap=\"round\"\n  stroke-linejoin=\"round\"\n>\n  <path d=\"M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1\" />\n  <path d=\"M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4\" />\n</svg>"};
 const ic=n=>IC[n]||'';
 const OCC={bd:'День рождения',love:'Признание',wed:'Свадьба',jub:'Юбилей',joke:'Чёрный юмор',own:'Своё описание'};
 const GEN=['Поп','Рэп','Шансон','Рок','Баллада','Эстрада 90-х'];
@@ -494,7 +468,7 @@ const ME='p1';
 /* ---------- утилиты ---------- */
 let toastT;
 function toast(t){const el=$('#toast');el.textContent=t;el.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>el.classList.remove('on'),2200)}
-function setSurface(s){S.surface=s;document.documentElement.dataset.surface=s;document.querySelectorAll('.pult [data-s]').forEach(b=>b.classList.toggle('on',b.dataset.s===s));$('#pult').classList.remove('open');renderPanel()}
+function setSurface(s){S.surface='bot';renderPanel()}
 function wave(seedN,n){const a=[];let x=seedN*9301+49297;for(let i=0;i<n;i++){x=(x*9301+49297)%233280;const r=x/233280;a.push(Math.round(8+Math.pow(Math.sin(i/n*Math.PI),.6)*24*(.35+r*.65)))}return a}
 function stressOf(word){const v='аеёиоуыэюя';const idx=[];for(let i=0;i<word.length;i++)if(v.includes(word[i].toLowerCase()))idx.push(i);if(!idx.length)return[word,word];const mk=k=>word.slice(0,k+1)+'́'+word.slice(k+1);return idx.length===1?[mk(idx[0])]:[mk(idx[0]),mk(idx[1])]}
 function ordById(id){return S.orders.find(o=>o.id===id)}
@@ -502,17 +476,19 @@ function partnerById(id){return S.partners.find(p=>p.id===id)}
 function addTimer(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t}
 
 /* ---------- чат ---------- */
-function say(m){m.id=m.id||('m'+Math.random().toString(36).slice(2,8));S.chat.push(m);renderChat(true);return m}
+function say(m){m.ts=m.ts||new Date(2026,10,10,16,40+S.chat.length%20).toLocaleTimeString('ru',{hour:'2-digit',minute:'2-digit'});m.id=m.id||('m'+Math.random().toString(36).slice(2,8));S.chat.push(m);renderChat(true);return m}
+function banner(t,sub,icon){return `<div class="banner"><span class="big" aria-hidden="true">${ic(icon)}</span><b>${t}</b><span>${sub}</span></div>`}
 function renderMsg(m){
-  if(m.t==='me')return `<div class="msg me" data-m="${m.id}"><div class="bub">${esc(m.text)}</div></div>`;
+  if(m.mail)m=Object.assign({},m,mailData());if(m.adm)m=Object.assign({},m,admData());if(m.prc)m=Object.assign({},m,prcData());if(m.par)m=Object.assign({},m,parData());
+  if(m.t==='me')return `<div class="msg me" data-m="${m.id}"><div class="bub">${esc(m.text)}<span class="ts">${m.ts||''}</span></div></div>`;
   let h='';
-  if(m.hero)h+=`<div class="hero"><span class="note" aria-hidden="true">♪</span><h3>Песня о вас за три минуты</h3><p>Расскажите историю. Я напишу текст, подберу голос и сведу трек. Первое демо бесплатно.</p></div>`;
-  if(m.text)h+=`<div class="bub">${m.text}</div>`;
+  if(m.hero)h+=banner('Песня о вас за три минуты','Расскажите историю, остальное сделаю я. Первое демо бесплатно','music');
+  if(m.text)h+=`<div class="bub">${m.text}<span class="ts">${m.ts||''}</span></div>`;
   if(m.sum)h+=`<div class="bub"><dl class="sum">${m.sum.map(([a,b])=>`<dt>${a}</dt><dd>${b}</dd>`).join('')}</dl></div>`;
   if(m.progress!==undefined)h+=progressHtml(m);
   if(m.result)h+=resultHtml(m);
-  if(m.link)h+=`<div class="bub"><b>Ваша ссылка</b><div class="link">${ic('link')}<span>max.ru/kuplet_bot?start=ref_${m.link}</span></div><small>За каждых 5 друзей даём песню в подарок.</small>${meterHtml()}</div>`;
-  if(m.bal)h+=`<div class="bub"><b>Баланс</b><small>Песен на счёте: <span class="num">${S.songs}</span></small><small>Бесплатных демо сегодня: <span class="num">${S.freeLeft}</span> из ${S.freeLimit}. Обновление в 00:00 МСК.</small><div class="meter"><i style="width:${S.freeLimit?S.freeLeft/S.freeLimit*100:0}%"></i></div></div>`;
+  if(m.link)h+=banner('Пригласи друга','За каждых 5 дарим песню','gift')+`<div class="bub"><b>Ваша ссылка</b><div class="link">${ic('link')}<span>max.ru/kuplet_bot?start=ref_${m.link}</span></div><small>За каждых 5 друзей даём песню в подарок.</small>${meterHtml()}</div>`;
+  if(m.bal)h+=banner('Баланс','Песни и бесплатные демо','wallet')+`<div class="bub"><b>Баланс</b><small>Песен на счёте: <span class="num">${S.songs}</span></small><small>Бесплатных демо сегодня: <span class="num">${S.freeLeft}</span> из ${S.freeLimit}. Обновление в 00:00 МСК.</small><div class="meter"><i style="width:${S.freeLimit?S.freeLeft/S.freeLimit*100:0}%"></i></div></div>`;
   if(m.mine)h+=minesHtml();
   if(m.opts)h+=`<div class="opts">${m.opts.map(o=>`<button class="opt ${o.cls||''}" data-a="${o.a}" data-v="${esc(o.v||'')}" ${m.done?'disabled':''}>${o.i?ic(o.i):''}${o.l}</button>`).join('')}</div>`;
   return `<div class="msg bot" data-m="${m.id}">${h}</div>`;
@@ -542,7 +518,7 @@ function updateHint(){
   else{h.textContent='';i.placeholder='Сообщение'}
 }
 function lock(m){m.done=true}
-const MAIN=()=>[{l:'Создать песню',a:'new',i:'music',cls:'pri'},{l:'Баланс',a:'bal',i:'wallet'},{l:'Пригласи друга',a:'inv',i:'gift'},{l:'Мои песни',a:'mine',i:'list-music'},{l:'Поддержка',a:'sup',i:'headphones'}];
+const MAIN=()=>[{l:'Создать песню',a:'new',i:'music',cls:'pri'},{l:'Баланс',a:'bal',i:'wallet'},{l:'Пригласи друга',a:'inv',i:'gift'},{l:'Мои песни',a:'mine',i:'list-music'},{l:'Поддержка',a:'sup',i:'headphones'},{l:'Админка владельца',a:'adm',i:'layout-dashboard'},{l:'Кабинет паблика',a:'par',i:'megaphone'}];
 function startChat(){
   S.chat=[];S.flow={step:'idle',d:{}};
   say({hero:true,text:`Вы пришли по приглашению <b>Афиша 24</b>. Выберите, с чего начать.`,opts:MAIN()});
@@ -571,6 +547,7 @@ function act(a,v,mid){
     case 'play':togglePlay(v);break;
     case 'fix':{const o=ordById(+v);if(o.fixes<=0){toast('Правки закончились');break}F.step='fix';F.d.fixOrder=o.id;say({text:`Что поменять? Осталось правок: <b>${o.fixes}</b> из 3.`});$('#inp').focus();updateHint();break}
     case 'menu':say({text:'Главное меню',opts:MAIN()});break;
+    default:extra(a,v,mid);
   }
 }
 function summary(){
@@ -650,8 +627,9 @@ $('#composer').addEventListener('submit',e=>{
     if(raw.length<12){toast('Расскажите чуть подробнее: от 12 символов');return}
     if(raw.length>600){toast('Слишком длинно: до 600 символов');return}
     i.value='';say({t:'me',text:raw});F.d.story=raw;
-    const w=(raw.match(/[А-ЯЁ][а-яё]{2,}/g)||[]);const name=(raw.match(/\b(?:Алин|Максим|Ксени|Игор|Полин|Зо[яю]|Рустам|Лер|Тимур|Анн|Мар|Ольг|Дмитри|Сергей|Андре|Екатерин|Наташ|Ир)[а-яё]*/g)||[])[0]||w.find(x=>!/^(Подруг|Любит|Другу|Отцу|Жене|Маме|Мужу|Сыну|Дочке)/.test(x))||'';
-    F.d.name=name||'друга';
+    const w=(raw.match(/[А-ЯЁ][а-яё]{2,}/g)||[]);let name=(raw.match(/\b(?:Алин|Максим|Ксени|Игор|Полин|Зо[яю]|Рустам|Лер|Тимур|Анн|Мар|Ольг|Дмитри|Сергей|Андре|Екатерин|Наташ|Ир)[а-яё]*/g)||[])[0]||w.find(x=>!/^(Подруг|Любит|Другу|Отцу|Жене|Маме|Мужу|Сыну|Дочке)/.test(x))||'';
+    F.d.name=name?name.replace(/(Алин|Полин|Лер|Анн|Мар|Ольг|Наташ|Ир|Екатерин|Зо)е$/,'$1а').replace(/(Алин|Полин|Лер|Анн|Мар|Ольг|Наташ|Ир|Екатерин)у$/,'$1а').replace(/(Максим|Игор|Рустам|Сергей|Андре)у$/,'$1'):'друга';
+    name=name?F.d.name:'';
     if(name){const alt=stressOf(name);F.step='stress';say({text:`Проверим ударение в имени. Как произносить: <span class="stress">${esc(alt[0])}</span>?<small>Бот не угадывает, а спрашивает: так в песне не будет «Аня́» вместо «А́ня».</small>`,opts:alt.concat(alt.length>1?[]:[]).map(a=>({l:a,a:'st',v:a})).concat([{l:'Пропустить',a:'st',v:name}])})}
     else{F.d.stress=F.d.name;summary()}
   }else if(F.step==='fix'){
@@ -663,126 +641,67 @@ $('#chat').addEventListener('click',e=>{const b=e.target.closest('[data-a]');if(
 $('#sheetBg').addEventListener('click',closeSheet);
 $('#phMenu').onclick=()=>act('menu');$('#phBack').onclick=()=>act('menu');
 
-/* ---------- панели ---------- */
-const STL={queue:'В очереди',gen:'Генерация',ready:'Готово',fix:'Нужна проверка'};
-function stPill(o){return `<span class="st ${o.st}">${STL[o.st]}${o.st==='gen'?' '+Math.round(o.prog)+'%':''}</span>`}
-function ownerStats(){
-  const t=S.today;const fixes=S.orders.filter(o=>o.st==='fix').length;const reqs=S.partners.filter(p=>p.req).length;
-  return {t,fixes,reqs};
+/* ---------- админка внутри бота и карта страхов ---------- */
+const FEARS=[
+ ['«У наших конкурентов MAX уже банил бота»','Рассылки только тем, кто сам согласился. Лимит скорости, запрет ночью, «Отписаться» в каждом сообщении. При высоком риске запуск закрыт.','mail','Открыть рассылки в боте'],
+ ['«Сейчас все начали лепить таких ботов»','Бот сам приводит людей: 5 друзей дают песню в подарок, а паблики получают долю с оплат. Это растёт без вложений в рекламу.','inv','Показать приглашения'],
+ ['«Партнёр переживает, справитесь вы или нет»','Всё уже работает: песню можно создать, оплатить и найти в админке. Ошибки ИИ ловит проверка ударений, владелец видит всё в чате.','adm','Открыть админку'],
+ ['«Планы грандиозные на привлечение трафика»','Выдержит нагрузку: песни идут через очередь, бесплатные демо ограничены, цена и доля партнёров меняются кнопками.','prc','Поменять цену'],
+ ['«Нужно быстро, а деньги считаем»','Показываем цифры сразу: сколько остаётся с одной песни и сколько уходит партнёру. Запуск по этапам: демо, тест на своей аудитории, рост.','par','Кабинет паблика']
+];
+function fearsView(){
+  return `<div class="pHead"><div><h1>Страхи и как бот их закрывает</h1><p>Из переписки с Павлом, 10 ноября. Нажмите кнопку: бот покажет ответ в чате.</p></div></div>
+  <div class="rows fearList">${FEARS.map((f,i)=>`<div style="align-items:flex-start"><div class="grow"><b>${f[0]}</b><span>${f[1]}</span></div><button class="pill sm" data-f="${i}">${f[3]}</button></div>`).join('')}</div>
+  <p class="note2">Все данные вымышленные, ничего не отправляется. Голосовые Павла доучтём в списке.</p>`;
 }
-function riskLevel(){
-  let r=0;if(!S.optin)r+=3;if(!S.unsub)r+=2;if(!S.night)r+=1;if(S.limit>40)r+=3;else if(S.limit>25)r+=1;
-  return r;
-}
-function riskInfo(){const r=riskLevel();return r>=4?{k:'high',t:'Высокий',pos:88}:r>=2?{k:'mid',t:'Средний',pos:52}:{k:'low',t:'Низкий',pos:10}}
-function renderPanel(){
-  const P=$('#panel');const sy=window.scrollY;
-  if(S.surface==='partner')P.innerHTML=partnerView();
-  else if(S.surface==='owner')P.innerHTML=ownerView();
-  else P.innerHTML='';
-  wirePanel();
-}
-function ownerView(){
-  const {t,fixes,reqs}=ownerStats();
-  const tabs=[['overview','Обзор',0],['orders','Заказы',fixes],['partners','Партнёры',reqs],['safe','Рассылки',0],['price','Цены',0]];
-  let h=`<div class="pHead"><div><h1>Сегодня, 10 ноября</h1><p>Панель владельца «Куплет»</p></div></div>
-  <div class="tabs" role="tablist">${tabs.map(([k,l,c])=>`<button class="tab ${S.tab===k?'on':''}" role="tab" data-tab="${k}">${l}${c?`<span class="cnt">${c}</span>`:''}</button>`).join('')}</div>`;
-  if(S.tab==='overview')h+=overview(t,fixes,reqs);
-  if(S.tab==='orders')h+=ordersTab();
-  if(S.tab==='partners')h+=partnersTab();
-  if(S.tab==='safe')h+=safeTab();
-  if(S.tab==='price')h+=priceTab();
-  return h;
-}
-function overview(t,fixes,reqs){
-  const mx=Math.max(...t.hours);
-  const gen=S.orders.filter(o=>o.st==='gen'||o.st==='queue').length;
-  const attn=[];
-  if(fixes)attn.push(`<div>${ic('triangle-alert')}<div class="grow"><b>${fixes} ${fixes===1?'песня ждёт':'песни ждут'} проверки</b><span>ИИ не уверен в ударении имени</span></div><button class="pill sm" data-tab="orders">Открыть</button></div>`);
-  if(reqs)attn.push(`<div>${ic('banknote')}<div class="grow"><b>${reqs} ${reqs===1?'заявка':'заявки'} на выплату</b><span>Партнёры ждут перевод</span></div><button class="pill sm" data-tab="partners">Разобрать</button></div>`);
-  const ri=riskInfo();
-  attn.push(`<div>${ic('shield-check')}<div class="grow"><b>Риск блокировки рассылок: ${ri.t.toLowerCase()}</b><span>Лимит ${S.limit} сообщений в минуту</span></div><button class="pill sm" data-tab="safe">Настроить</button></div>`);
-  return `<div class="strip">
-    <div><small>Выручка за сегодня</small><b class="num">${rub(t.revenue)}</b><em>+12% к вчера</em></div>
-    <div><small>Песен создано</small><b class="num">${num(t.songs)}</b><em>${gen} в работе сейчас</em></div>
-    <div><small>Доплатили за полную</small><b class="num">${num(t.paid)}</b><em>${Math.round(t.paid/t.songs*100)}% от демо</em></div>
-    <div><small>Начислено партнёрам</small><b class="num">${rub(t.toPartners)}</b><em class="dn">${S.share}% с продаж</em></div></div>
-  <div class="two"><div class="sec"><h2>Песен по часам</h2><div class="bars">${t.hours.map((v,i)=>`<div><i class="${i===t.hours.length-1?'now':''}" style="height:${v/mx*100}%"></i><span class="num">${S.hoursLbl[i]}</span></div>`).join('')}</div>
-    <h2 style="margin-top:26px">Последние заказы</h2><div class="rows" id="lastRows">${S.orders.slice(0,5).map(o=>`<div><div class="grow"><b>№ ${o.id}, ${esc(o.name)}</b><span>${OCC[o.occ]}, ${o.gen}</span></div>${stPill(o)}</div>`).join('')}</div></div>
-    <div class="sec"><h2>Требует внимания</h2><div class="rows">${attn.join('')}</div></div></div>`;
-}
-function ordersTab(){
-  const o=ordById(S.sel)||S.orders[0];
-  const stg=['В очереди','Генерация','Готово'];const k={queue:0,gen:1,ready:2,fix:1}[o.st];
-  const pr=o.partner?partnerById(o.partner):null;
-  return `<div class="split"><div class="list" role="listbox">${S.orders.map(x=>`<button class="li ${x.id===o.id?'on':''}" data-sel="${x.id}"><div class="grow"><b>№ ${x.id}, ${esc(x.name)}</b><span class="s">${OCC[x.occ]}, ${x.gen}</span></div>${stPill(x)}</button>`).join('')}</div>
-  <div class="detail"><h2>Заказ № ${o.id}</h2><span class="st ${o.st}" data-adst>${STL[o.st]}${o.st==='gen'?' '+Math.round(o.prog)+'%':''}</span>
-    <dl class="kv"><dt>Для кого</dt><dd>${esc(o.name)}</dd><dt>Повод</dt><dd>${OCC[o.occ]}</dd><dt>Жанр и голос</dt><dd>${o.gen}, ${o.voi.toLowerCase()}</dd><dt>Оплата</dt><dd>${o.paid?'полная версия, '+rub(o.amount||S.price):'демо, бесплатно'}</dd><dt>Партнёр</dt><dd>${pr?esc(pr.name):'пришёл сам'}</dd></dl>
-    <div class="story">${esc(o.story)}</div>
-    ${o.note?`<div class="hl">${ic('triangle-alert')} ${esc(o.note)}</div>`:''}
-    <div class="steps">${stg.map((s,i)=>`<span class="${i<k||o.st==='ready'?'done':i===k?'on':''}">${s}</span>`).join('')}</div>
-    <div class="acts">${o.st==='fix'?`<button class="pill pri" data-fixok="${o.id}">Исправить и выдать клиенту</button>`:''}${o.st==='ready'?`<button class="pill" data-regen="${o.id}">Перегенерировать</button>`:''}<button class="pill" data-nudge="${o.id}">Написать клиенту</button></div></div></div>`;
-}
-function partnersTab(){
-  const tot=S.partners.reduce((s,p)=>s+p.earned-p.out,0);
-  return `<div class="hl">К выплате партнёрам: <b class="num">${rub(tot)}</b>. Доля партнёра сейчас <b>${S.share}%</b> с каждой оплаты (меняется во вкладке «Цены»).</div>
-  <table><thead><tr><th>Партнёр</th><th>Подписчики</th><th>Запуски</th><th>Оплат</th><th>К выплате</th><th></th></tr></thead><tbody>${S.partners.map(p=>{const due=p.earned-p.out;return `<tr class="${p.id===ME?'me':''}"><td><b>${esc(p.name)}</b><span>${p.ch}</span></td><td class="num">${num(p.subs)}</td><td class="num">${num(p.starts)}</td><td class="num">${p.paid}</td><td class="num">${rub(due)}</td><td>${p.req?`<button class="pill sm pri" data-pay="${p.id}">Выплатить</button>`:`<span class="st ready">Нет заявок</span>`}</td></tr>`}).join('')}</tbody></table>
-  <p class="note2">Выплата проходит через самозанятых партнёров: чек формируется автоматически.</p>`;
-}
-function safeTab(){
+function riskLevel(){let r=0;if(!S.optin)r+=3;if(!S.unsub)r+=2;if(!S.night)r+=1;if(S.limit>40)r+=3;else if(S.limit>25)r+=1;return r}
+function riskInfo(){const r=riskLevel();return r>=4?{k:'high',t:'высокий'}:r>=2?{k:'mid',t:'средний'}:{k:'low',t:'низкий'}}
+const onoff=v=>v?'вкл':'выкл';
+function mailData(){
   const ri=riskInfo();const aud=21300,ok=S.optin?18420:aud;const eta=Math.ceil(ok/S.limit);
-  const rule=(k,l,s)=>`<div class="rule"><div class="grow"><b>${l}</b><span>${s}</span></div><button class="tg ${S[k]?'on':''}" role="switch" aria-checked="${S[k]}" aria-label="${l}" data-tg="${k}"></button></div>`;
-  return `<div class="hl">MAX блокирует ботов за спам-рассылки. Поэтому пишем только тем, кто сам согласился, и не быстрее заданного лимита.</div>
-  <div class="gauge"><div><small style="color:var(--ink2)">Риск блокировки</small><b style="display:block;font:600 20px var(--fd)">${ri.t}</b></div><div class="m"><i style="left:${ri.pos}%"></i></div></div>
-  ${rule('optin','Только тем, кто согласился','Кнопка «Хочу новости» при первом запуске бота')}
-  ${rule('unsub','«Отписаться» в каждом сообщении','Один тап, без вопросов')}
-  ${rule('night','Не писать с 23:00 до 8:00','Ночью рассылки не уходят')}
-  <div class="rule" style="display:block"><div style="display:flex;justify-content:space-between"><b>Скорость отправки</b><b class="num">${S.limit} сообщ. в минуту</b></div><input type="range" min="5" max="60" step="5" value="${S.limit}" id="limRange" aria-label="Скорость отправки"><span style="font-size:13px;color:var(--ink2)">Рассылка на ${num(ok)} из ${num(aud)} подписчиков уйдёт за ${eta>=60?Math.floor(eta/60)+' ч '+(eta%60)+' мин':eta+' мин'}${S.optin?' ('+Math.round(ok/aud*100)+'% дали согласие)':''}.</span></div>
-  <div class="acts" style="margin-top:16px"><button class="pill pri" data-bc ${ri.k==='high'?'disabled':''}>Запланировать рассылку</button>${ri.k==='high'?`<span class="note2" style="margin:0">При высоком риске запуск закрыт.</span>`:''}</div>`;
+  const t=eta>=60?Math.floor(eta/60)+' ч '+(eta%60)+' мин':eta+' мин';
+  return {text:`<b>Рассылка без блокировки</b><small>MAX блокирует ботов за спам. Поэтому пишем только согласившимся и не быстрее лимита.</small><small>Риск блокировки: <b>${ri.t}</b></small><small>Получат <span class="num">${num(ok)}</span> из ${num(aud)}, это займёт ${t}.</small>`,
+   opts:[{l:'Только согласившимся: '+onoff(S.optin),a:'tg',v:'optin',i:'shield-check'},{l:'Ночью не писать: '+onoff(S.night),a:'tg',v:'night'},{l:'«Отписаться»: '+onoff(S.unsub),a:'tg',v:'unsub'},{l:'Скорость −',a:'lim',v:'-5'},{l:S.limit+' в минуту',a:'noop'},{l:'Скорость +',a:'lim',v:'5'},{l:'Запустить рассылку',a:'bc',cls:'pri',i:'send'},{l:'Админка',a:'adm',i:'layout-dashboard'}]};
 }
-function priceTab(){
-  const p=S.price,sh=S.share/100,c=S.cost;const N=1000;
-  const rev=p*N,par=rev*sh,own=rev-par-c*N;
-  return `<div class="fld"><label for="priceIn">Цена полной песни, ₽</label><div class="row"><input class="in num" id="priceIn" type="number" min="50" max="5000" step="10" value="${p}" aria-describedby="priceErr"><span class="note2" id="priceErr" style="margin:0">в боте цена обновится сразу</span></div></div>
-  <div class="fld"><label for="shRange">Доля партнёра: <span class="num">${S.share}%</span></label><input type="range" id="shRange" min="10" max="90" step="5" value="${S.share}"><span class="note2" style="margin:0">Партнёр получает долю с каждой оплаты по его ссылке.</span></div>
-  <div class="fld"><label for="frIn">Бесплатных демо в день на человека</label><div class="row"><input class="in num" id="frIn" type="number" min="0" max="20" value="${S.freeLimit}"></div></div>
-  <h2 style="font-size:16px;margin:24px 0 4px">Что получится на 1 000 продаж</h2>
-  <div class="eco"><div><small>Выручка</small><b class="num">${rub(rev)}</b></div><div><small>Партнёрам</small><b class="num">${rub(par)}</b></div><div><small>Себестоимость ИИ</small><b class="num">${rub(c*N)}</b></div><div><small>Вам остаётся</small><b class="num" style="color:${own>0?'var(--mint)':'var(--bad)'}">${rub(own)}</b></div><div><small>С одной песни</small><b class="num">${rub(own/N)}</b></div></div>
-  <p class="note2">Себестоимость ${c} ₽ на песню: расчёт для примера, уточним после выбора моделей ИИ.</p>`;
+function admData(){
+  const t=S.today;const fixes=S.orders.filter(o=>o.st==='fix').length;const reqs=S.partners.filter(p=>p.req).length;
+  return {text:`<b>Сегодня, 10 ноября</b><dl class="sum"><dt>Выручка</dt><dd class="num">${rub(t.revenue)}</dd><dt>Песен создано</dt><dd class="num">${num(t.songs)}</dd><dt>Оплатили полную</dt><dd class="num">${num(t.paid)} (${Math.round(t.paid/t.songs*100)}%)</dd><dt>Партнёрам</dt><dd class="num">${rub(t.toPartners)}</dd></dl><small>Требует внимания: проверка песен ${fixes}, заявки на выплату ${reqs}.</small>`,
+   opts:[{l:'Проверка песен ('+fixes+')',a:'fixq',i:'triangle-alert',cls:fixes?'pri':''},{l:'Выплаты ('+reqs+')',a:'pays',i:'banknote'},{l:'Рассылки',a:'mail',i:'send'},{l:'Цена и доля',a:'prc',i:'wallet'},{l:'Главное меню',a:'menu'}]};
 }
-function partnerView(){
-  const p=partnerById(ME);const due=p.earned-p.out;const conv=Math.round(p.paid/p.starts*100);
-  const posts=[['Для именинника','Дарим песню на день рождения: расскажите историю, а бот напишет текст и споёт. Первое демо бесплатно.'],['Для свадьбы','Подарок молодожёнам: песня про вашу историю знакомства. Попробуйте демо.'],['Для друзей','Хотите, чтобы про вас спели? Пять минут, и песня готова.']];
-  return `<div class="pHead"><div><h1>${esc(p.name)}</h1><p>Кабинет партнёра</p></div></div>
-  <div class="strip"><div><small>Переходы по ссылке</small><b class="num">${num(p.clicks)}</b><em>${num(p.subs)} подписчиков</em></div><div><small>Запустили бота</small><b class="num">${num(p.starts)}</b><em>${Math.round(p.starts/p.clicks*100)}% от переходов</em></div><div><small>Оплатили</small><b class="num">${num(p.paid)}</b><em>${conv}% от запусков</em></div><div><small>Заработано</small><b class="num">${rub(p.earned)}</b><em>${S.share}% с каждой оплаты</em></div></div>
-  <div class="two"><div class="sec"><h2>Ваша ссылка</h2><div class="link" style="margin-bottom:18px">${ic('link')}<span>max.ru/kuplet_bot?start=ref_${ME}</span></div>
-    <h2>Готовые посты</h2><div class="rows">${posts.map(([a,b],i)=>`<div><div class="grow"><b>${a}</b><span>${b}</span></div><button class="pill sm" data-cp="${i}">${ic('copy')}Скопировать</button></div>`).join('')}</div></div>
-  <div class="sec"><h2>Выплаты</h2><div class="gauge" style="display:block"><small style="color:var(--ink2)">Доступно к выплате</small><b style="display:block;font:600 26px var(--fd);margin:2px 0 10px" class="num">${rub(due)}</b>${p.req?`<span class="st gen">Заявка отправлена</span><p class="note2">Владелец увидит её в панели и переведёт деньги.</p>`:`<button class="pill pri" data-req ${due<1000?'disabled':''}>Заказать выплату</button><p class="note2">Минимум 1 000 ₽. Выплата самозанятому, чек формируется сам.</p>`}</div>
-    <p class="note2">Выплачено всего: <b class="num">${rub(p.out)}</b></p></div></div>`;
+function prcData(){
+  const own=S.price-S.price*S.share/100-S.cost;
+  return {text:`<b>Цена и доля партнёра</b><dl class="sum"><dt>Цена песни</dt><dd class="num">${rub(S.price)}</dd><dt>Доля партнёра</dt><dd class="num">${S.share}%</dd><dt>ИИ на песню</dt><dd class="num">${rub(S.cost)}</dd><dt>Вам с песни</dt><dd class="num">${rub(own)}</dd></dl><small>На 1 000 продаж вам останется ${rub(own*1000)}.</small>`,
+   opts:[{l:'Цена −50',a:'pr',v:'-50'},{l:'Цена +50',a:'pr',v:'50'},{l:'Доля −5%',a:'sh',v:'-5'},{l:'Доля +5%',a:'sh',v:'5'},{l:'Админка',a:'adm',i:'layout-dashboard'}]};
 }
-function wirePanel(){
-  const P=$('#panel');
-  P.querySelectorAll('[data-tab]').forEach(b=>b.onclick=()=>{S.tab=b.dataset.tab;renderPanel()});
-  P.querySelectorAll('[data-sel]').forEach(b=>b.onclick=()=>{S.sel=+b.dataset.sel;renderPanel()});
-  P.querySelectorAll('[data-fixok]').forEach(b=>b.onclick=()=>{const o=ordById(+b.dataset.fixok);o.st='ready';o.note=null;toast('Песня выдана клиенту');renderPanel()});
-  P.querySelectorAll('[data-regen]').forEach(b=>b.onclick=()=>{const o=ordById(+b.dataset.regen);o.st='gen';o.prog=0;renderPanel();const t0=performance.now();const tk=()=>{const p=Math.min(100,(performance.now()-t0)/3500*100);o.prog=p;patchAdminProg(o);if(p<100)timers.push(requestAnimationFrame(tk));else{o.st='ready';renderPanel();toast('Песня пересобрана')}};timers.push(requestAnimationFrame(tk))});
-  P.querySelectorAll('[data-nudge]').forEach(b=>b.onclick=()=>{const o=ordById(+b.dataset.nudge);if(o.mine){say({text:'Менеджер: хотим уточнить пару деталей по вашей песне. Пишите сюда.'});toast('Сообщение ушло в бот слева')}else toast('В демо сообщение не отправляется')});
-  P.querySelectorAll('[data-pay]').forEach(b=>b.onclick=()=>{const p=partnerById(b.dataset.pay);p.out=p.earned;p.req=false;toast('Выплачено: '+p.name);renderPanel()});
-  P.querySelectorAll('[data-tg]').forEach(b=>b.onclick=()=>{S[b.dataset.tg]=!S[b.dataset.tg];renderPanel()});
-  const lr=$('#limRange');if(lr)lr.oninput=()=>{S.limit=+lr.value;renderPanel();const n=$('#limRange');n&&n.focus()};
-  const bc=P.querySelector('[data-bc]');if(bc)bc.onclick=()=>toast('Рассылка запланирована на 18:00 (демо)');
-  const pi=$('#priceIn');if(pi)pi.onchange=()=>{let v=Math.round(+pi.value);if(!(v>=50&&v<=5000)){toast('Цена от 50 до 5 000 ₽');pi.value=S.price;return}S.price=v;renderChat();renderPanel();toast('Цена в боте: '+rub(v))};
-  const sr=$('#shRange');if(sr)sr.oninput=()=>{S.share=+sr.value;renderPanel();const n=$('#shRange');n&&n.focus()};
-  const fr=$('#frIn');if(fr)fr.onchange=()=>{let v=Math.round(+fr.value);if(!(v>=0&&v<=20)){toast('От 0 до 20');fr.value=S.freeLimit;return}S.freeLimit=v;S.freeLeft=Math.min(S.freeLeft,v);renderChat();renderPanel()};
-  P.querySelectorAll('[data-cp]').forEach(b=>b.onclick=()=>{toast('Текст скопирован')});
-  const rq=P.querySelector('[data-req]');if(rq)rq.onclick=()=>{partnerById(ME).req=true;toast('Заявка отправлена владельцу');renderPanel()};
+function parData(){
+  const p=partnerById(ME);const due=p.earned-p.out;
+  return {text:`<b>Кабинет паблика «${esc(p.name)}»</b><div class="link">${ic('link')}<span>max.ru/kuplet_bot?start=ref_${ME}</span></div><dl class="sum"><dt>Запустили бота</dt><dd class="num">${num(p.starts)}</dd><dt>Оплатили</dt><dd class="num">${num(p.paid)}</dd><dt>Заработано</dt><dd class="num">${rub(p.earned)}</dd><dt>К выплате</dt><dd class="num">${rub(due)}</dd></dl><small>Ваша доля ${S.share}% с каждой оплаты.</small>${p.req?'<small>Заявка на выплату отправлена владельцу.</small>':''}`,
+   opts:[{l:p.req?'Заявка отправлена':'Заказать выплату',a:'req',i:'banknote',cls:p.req?'':'pri'},{l:'Скопировать ссылку',a:'copy',i:'copy'},{l:'Главное меню',a:'menu'}]};
 }
-function patchAdminProg(o){
-  const el=document.querySelector('[data-adst]');if(el&&S.sel===o.id){el.textContent=STL[o.st]+(o.st==='gen'?' '+Math.round(o.prog)+'%':'')}
+function extra(a,v,mid){
+  const m=S.chat.find(x=>x.id===mid);
+  const dyn=(k,fn)=>{const x={};x[k]=1;say(Object.assign({id:'d'+Math.random().toString(36).slice(2,7)},x))};
+  switch(a){
+    case 'adm':say({adm:1});break;
+    case 'mail':say({mail:1});break;
+    case 'prc':say({prc:1});break;
+    case 'par':say({par:1});break;
+    case 'tg':S[v]=!S[v];renderChat();renderPanel();break;
+    case 'lim':S.limit=Math.max(5,Math.min(60,S.limit+ +v));renderChat();break;
+    case 'noop':break;
+    case 'bc':{if(riskInfo().k==='high'){say({text:'Запуск закрыт: риск блокировки высокий. Верните согласие, лимит ниже 25 в минуту и ночной запрет.'})}else{say({text:`Рассылка запланирована на 18:00. Получат ${num(S.optin?18420:21300)} человек, лимит ${S.limit} в минуту.`})}break}
+    case 'pr':{const n=S.price+ +v;if(n<50||n>5000){toast('Цена от 50 до 5 000 ₽');break}S.price=n;renderChat();toast('Цена в боте: '+rub(n));break}
+    case 'sh':S.share=Math.max(10,Math.min(90,S.share+ +v));renderChat();break;
+    case 'fixq':{const o=S.orders.find(x=>x.st==='fix');if(!o){say({text:'Песен на проверке нет.',opts:[{l:'Админка',a:'adm'}]});break}say({text:`<b>Заказ № ${o.id}, ${esc(o.name)}</b><small>${esc(o.note||'')}</small><small>${esc(o.story)}</small>`,opts:[{l:'Исправить и выдать клиенту',a:'fixok',v:String(o.id),cls:'pri',i:'check'},{l:'Админка',a:'adm'}]});break}
+    case 'fixok':{const o=ordById(+v);o.st='ready';o.note=null;say({text:`Песня № ${o.id} выдана клиенту.`,opts:[{l:'Админка',a:'adm',i:'layout-dashboard'}]});break}
+    case 'pays':{const l=S.partners.filter(p=>p.req);if(!l.length){say({text:'Заявок на выплату нет.',opts:[{l:'Админка',a:'adm'}]});break}say({text:'<b>Заявки на выплату</b>'+l.map(p=>`<small>${esc(p.name)}: ${rub(p.earned-p.out)}</small>`).join(''),opts:l.map(p=>({l:'Выплатить '+p.name,a:'pay1',v:p.id,cls:'pri'})).concat([{l:'Админка',a:'adm'}])});break}
+    case 'pay1':{const p=partnerById(v);p.out=p.earned;p.req=false;say({text:'Выплачено: '+esc(p.name)+'. Чек самозанятого сформирован.',opts:[{l:'Админка',a:'adm'}]});break}
+    case 'req':{const p=partnerById(ME);if(p.req)break;p.req=true;renderChat();toast('Заявка отправлена владельцу');break}
+  }
 }
-
+function renderPanel(){const P=$('#panel');P.innerHTML=fearsView();P.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{const f=FEARS[+b.dataset.f];act(f[2]);const ph=$('.phoneWrap');if(matchMedia('(max-width:980px)').matches)ph.scrollIntoView({behavior:'smooth'})})}
+function patchAdminProg(){}
 /* ---------- пульт ---------- */
-document.querySelectorAll('.pult [data-s]').forEach(b=>b.onclick=()=>setSurface(b.dataset.s));
 $('#pGear').onclick=()=>$('#pult').classList.add('open');
 $('#pGuide').onclick=()=>$('#guide').classList.toggle('on');
 $('#pReset').onclick=()=>{timers.forEach(t=>{clearTimeout(t);cancelAnimationFrame(t)});clearInterval(togglePlay.iv);const sf=S.surface;S=seed();S.surface=sf;closeSheet();startChat();renderPanel();toast('Демо сброшено')};
@@ -790,7 +709,7 @@ $('#pTheme').onclick=()=>{const r=document.documentElement;const dark=r.dataset.
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){closeSheet();$('#guide').classList.remove('on')}});
 document.addEventListener('click',e=>{if(!e.target.closest('#guide,#pGuide'))$('#guide').classList.remove('on');if(!e.target.closest('#pult'))$('#pult').classList.remove('open')});
 
-setSurface('owner');startChat();
+setSurface('bot');startChat();
 </script>
 </body>
 </html>
