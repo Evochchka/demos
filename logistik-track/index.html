@@ -1,0 +1,953 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Трасса: рейсы, водители и счета (демо)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Source+Sans+3:wght@500;600;700&display=swap">
+<style>
+
+/* Каркас: лента-таймлайн + доска рейсов + чат водителя. Палитра: петроль и разметочный жёлтый. Язык форм: линейка, тонкие линии, прямые углы. */
+:root{
+  --bg:#EDF0F2;--panel:#FFFFFF;--soft:#E2E7EA;--ink:#11181C;--ink2:#46555D;--line:#C9D2D7;--edge:#11181C;
+  --brand:#0F5A73;--brandInk:#F2FAFC;--act:#FFC20E;--actInk:#1B1500;--sel:#0F5A73;--selInk:#FFFFFF;
+  --good:#1B7448;--bad:#B3321F;--warn:#8F5B00;--hl:#FFF0B8;--map:#DCE6E7;--water:#B9D3DC;--road:#FFFFFF;--roadEdge:#B8C4C9;
+  --s-new:#53636C;--s-asg:#2F66B0;--s-load:#97600A;--s-way:#0F5A73;--s-unl:#B1451C;--s-done:#1B7448;
+  --fd:'Oswald','Arial Narrow',system-ui,sans-serif;--fb:'Source Sans 3','Segoe UI',system-ui,sans-serif;color-scheme:light;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0B1216;--panel:#131D23;--soft:#1B2830;--ink:#E6EEF1;--ink2:#9DB0B9;--line:#27373F;--edge:#7C95A0;
+  --brand:#14708C;--brandInk:#F2FAFC;--act:#FFC20E;--actInk:#1B1500;--sel:#E6EEF1;--selInk:#0B1216;
+  --good:#5CC58A;--bad:#F37B68;--warn:#F0B04A;--hl:#3F3512;--map:#14242B;--water:#1D3A47;--road:#2A3C45;--roadEdge:#0B1519;
+  --s-new:#9DB0B9;--s-asg:#7DAEF0;--s-load:#F0B04A;--s-way:#5FC1E0;--s-unl:#F4906A;--s-done:#5CC58A;color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0B1216;--panel:#131D23;--soft:#1B2830;--ink:#E6EEF1;--ink2:#9DB0B9;--line:#27373F;--edge:#7C95A0;
+  --brand:#14708C;--brandInk:#F2FAFC;--act:#FFC20E;--actInk:#1B1500;--sel:#E6EEF1;--selInk:#0B1216;
+  --good:#5CC58A;--bad:#F37B68;--warn:#F0B04A;--hl:#3F3512;--map:#14242B;--water:#1D3A47;--road:#2A3C45;--roadEdge:#0B1519;
+  --s-new:#9DB0B9;--s-asg:#7DAEF0;--s-load:#F0B04A;--s-way:#5FC1E0;--s-unl:#F4906A;--s-done:#5CC58A;color-scheme:dark}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 16px/1.45 var(--fb);overflow-x:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:0;padding:0;text-align:inherit}
+:focus-visible{outline:3px solid var(--act);outline-offset:2px}
+h1,h2,h3,h4{font-family:var(--fd);margin:0;font-weight:600;line-height:1.1;letter-spacing:.005em}
+p{margin:0}
+.ic{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.75;stroke-linecap:round;stroke-linejoin:round}
+.num{font-variant-numeric:tabular-nums}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0)}
+[hidden]{display:none!important}
+
+#stage{position:relative;min-height:100vh}
+#frame{container:app/inline-size;background:var(--bg);min-height:100vh}
+@media (min-width:521px){
+  body:not(.clean) #stage:not(.phone){padding-right:96px}
+  #stage.phone{width:390px;height:800px;margin:16px auto 0;border:1px solid var(--edge);border-radius:28px;overflow:hidden;transform:translateZ(0);box-shadow:0 0 0 8px var(--soft);min-height:0}
+  #stage.phone #frame{height:100%;min-height:0;overflow-y:auto;scrollbar-width:none}
+  body.phonemode{background:var(--soft)}
+}
+
+/* кнопки: прямые углы, тонкая линия */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:0 18px;border:1px solid var(--edge);border-radius:3px;background:var(--panel);font-weight:700;transition:transform .12s,background .15s}
+.btn:hover{background:var(--soft)}
+.btn:active{transform:scale(.97)}
+.btn.cta{background:var(--act);color:var(--actInk);border-color:var(--actInk);min-height:48px;padding:0 22px;font-family:var(--fd);font-weight:600;font-size:18px;letter-spacing:.02em}
+.btn.cta:hover{background:#FFD24A}
+.btn.sm{min-height:44px;padding:0 14px;font-size:15px}
+.btn.ghost{border-color:var(--line)}
+.btn[disabled]{opacity:.45;pointer-events:none}
+.ibtn{width:44px;height:44px;display:grid;place-items:center;border:1px solid var(--line);border-radius:3px;background:var(--panel)}
+.ibtn:hover{background:var(--soft)}
+.chip{display:inline-flex;align-items:center;gap:6px;min-height:26px;padding:0 9px 0 7px;border:1px solid var(--c);color:var(--c);border-radius:2px;font-weight:700;font-size:14px;white-space:nowrap;background:var(--panel)}
+.chip .ic{width:15px;height:15px}
+.tag{display:inline-flex;align-items:center;gap:5px;min-height:24px;padding:0 8px;border-radius:2px;font-size:13px;font-weight:700;background:var(--hl);color:var(--ink);border:1px solid var(--warn)}
+.demo-note{font-size:13px;color:var(--ink2)}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:3px}
+.ph{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid var(--line);font-family:var(--fd);font-size:18px;font-weight:500}
+.ph small{font:600 14px var(--fb);color:var(--ink2);margin-left:auto}
+.pb{padding:16px}
+
+/* ====== КЛИЕНТ ====== */
+.cl{display:grid;grid-template-columns:minmax(0,1fr);min-height:100vh}
+.rail{display:none}
+@container app (min-width:900px){
+  .cl{grid-template-columns:216px minmax(0,1fr)}
+  .rail{display:flex;flex-direction:column;gap:4px;padding:18px 12px;border-right:1px solid var(--line);background:var(--panel);position:sticky;top:0;height:100vh}
+}
+.brand{display:flex;align-items:center;gap:10px;font:700 24px var(--fd);letter-spacing:.02em;min-height:44px;padding:0 6px 10px}
+.brand i{width:32px;height:32px;background:var(--act);color:var(--actInk);display:grid;place-items:center;border:1px solid var(--actInk)}
+.brand i .ic{width:20px;height:20px}
+.rnav{display:flex;align-items:center;gap:12px;min-height:48px;padding:0 12px;border-radius:3px;font-weight:700;position:relative}
+.rnav:hover{background:var(--soft)}
+.rnav[aria-current="page"]{background:var(--sel);color:var(--selInk)}
+.rnav .badge{margin-left:auto;font-size:13px;padding:1px 7px;border:1px solid currentColor;border-radius:2px}
+.rco{margin-top:auto;padding:12px;border:1px solid var(--line);border-radius:3px;font-size:14px;color:var(--ink2)}
+.rco b{display:block;color:var(--ink);font:600 17px var(--fd);margin-bottom:2px}
+.cmain{padding:16px 16px 92px;min-width:0;display:flex;flex-direction:column;gap:16px}
+@container app (min-width:900px){.cmain{padding:24px 32px 40px;gap:20px}}
+.mtop{display:flex;align-items:center;gap:10px}
+.mtop .brand{padding:0;margin-right:auto}
+@container app (min-width:900px){.mtop{display:none}}
+.bnav{display:grid;grid-template-columns:repeat(3,1fr);position:sticky;bottom:0;z-index:6;background:var(--panel);border-top:1px solid var(--edge);padding:4px 6px calc(4px + env(safe-area-inset-bottom,0px));margin-top:auto}
+.bnav button{min-height:54px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;font-size:14px;font-weight:700;border-radius:3px;color:var(--ink2)}
+.bnav button[aria-current="page"]{background:var(--sel);color:var(--selInk)}
+@container app (min-width:900px){.bnav{display:none}}
+.cl>div:last-child{min-width:0;display:flex;flex-direction:column}
+
+.hero{position:relative;overflow:hidden;background:var(--brand);color:var(--brandInk);border-radius:3px;padding:20px 18px 18px;display:flex;flex-direction:column;gap:12px;border:1px solid var(--edge)}
+@container app (min-width:900px){.hero{padding:28px 32px 26px;gap:16px}}
+.hero .top{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-weight:700}
+.hero .top .tag{background:rgba(255,255,255,.14);color:var(--brandInk);border-color:rgba(255,255,255,.45)}
+.hero h1{font-size:clamp(40px,13cqw,60px);font-weight:700;line-height:1;text-transform:uppercase;letter-spacing:.01em;position:relative;z-index:1}
+@container app (min-width:900px){.hero h1{font-size:72px}}
+.hero .sub{font-size:18px;font-weight:600;max-width:36ch;position:relative;z-index:1}
+.hero .route{display:flex;flex-wrap:wrap;gap:6px 14px;font-weight:600;opacity:.92;position:relative;z-index:1}
+.hero .art{position:absolute;right:-10px;top:26px;width:330px;height:auto;opacity:.95;display:none}
+@container app (min-width:900px){.hero .art{display:block}}
+.ruler{position:relative;height:94px;margin:6px 4px 0;z-index:1}
+.rl-line{position:absolute;left:0;right:0;top:38px;height:8px;background:rgba(255,255,255,.28);border-radius:1px}
+.rl-done{position:absolute;left:0;top:0;bottom:0;background:var(--act);width:0}
+.rl-ticks{position:absolute;left:0;right:0;top:50px;height:12px;background-image:linear-gradient(90deg,rgba(242,250,252,.8) 1px,transparent 1px);background-size:10% 100%;border-right:1px solid rgba(242,250,252,.8)}
+.rl-ticks::after{content:"";position:absolute;left:0;right:0;top:0;height:6px;background-image:linear-gradient(90deg,rgba(242,250,252,.55) 1px,transparent 1px);background-size:2% 100%}
+.rl-truck{position:absolute;top:18px;width:46px;height:40px;margin-left:-23px;display:grid;place-items:center;background:var(--act);color:var(--actInk);border:1px solid var(--actInk);border-radius:3px}
+.rl-truck .ic{width:26px;height:26px}
+.rl-ab{position:absolute;left:0;right:0;top:68px;display:flex;justify-content:space-between;font-weight:700;font-size:15px}
+.rl-left{position:absolute;left:0;top:0;font:600 18px var(--fd);letter-spacing:.02em}
+.rl-tot{position:absolute;right:0;top:3px;font:600 14px var(--fb);opacity:.85}
+
+.cols{display:grid;grid-template-columns:minmax(0,1fr);gap:16px}
+@container app (min-width:900px){.cols{grid-template-columns:minmax(0,5fr) minmax(0,7fr);align-items:start}}
+.tl{list-style:none;margin:0;padding:6px 0;position:relative}
+.tl li{display:grid;grid-template-columns:36px 1fr auto;gap:0 10px;padding:10px 16px;position:relative;min-height:56px;align-items:start}
+.tl li::before{content:"";position:absolute;left:33px;top:0;bottom:0;width:1px;background:var(--line)}
+.tl li:first-child::before{top:24px}.tl li:last-child::before{bottom:calc(100% - 24px)}
+.tl .nd{width:22px;height:22px;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;margin:2px 0 0 6px;position:relative;z-index:1;border-radius:2px;color:var(--panel)}
+.tl .nd .ic{width:15px;height:15px;stroke-width:2.5}
+.tl li.done .nd{background:var(--good);border-color:var(--good)}
+.tl li.cur{background:var(--hl)}
+.tl li.cur .nd{background:var(--act);border-color:var(--actInk);color:var(--actInk)}
+.tl li.todo{color:var(--ink2)}
+.tl b{font:500 18px var(--fd)}
+.tl .when{font-weight:700;font-variant-numeric:tabular-nums}
+.tl small{display:block;color:var(--ink2);font-size:14px;margin-top:1px}
+.kv{display:grid;grid-template-columns:auto 1fr;gap:8px 14px;margin:0}
+.kv dt{color:var(--ink2);font-size:14px;padding-top:2px}
+.kv dd{margin:0;font-weight:700;min-width:0;overflow-wrap:anywhere}
+.invbox{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:12px 16px;border-top:1px solid var(--line)}
+.invbox b{font:600 20px var(--fd)}
+.invbox .btn{margin-left:auto}
+
+/* карта: схема + HTML-подписи */
+.mapbox{position:relative;aspect-ratio:5/3;background:var(--map);overflow:hidden;border-bottom:1px solid var(--line);isolation:isolate}
+.mapbox svg{position:absolute;inset:0;width:100%;height:100%}
+.mapbox .tn{position:absolute;transform:translate(-50%,-50%);width:9px;height:9px;background:var(--panel);border:1.5px solid var(--ink)}
+.mapbox .tn.hub{width:13px;height:13px;background:var(--ink)}
+.mapbox .tl-lbl{position:absolute;font-size:13px;font-weight:700;white-space:nowrap;color:var(--ink);text-shadow:0 0 3px var(--map),0 0 3px var(--map),0 0 3px var(--map);transform:translate(-50%,-50%);pointer-events:none}
+.mapbox .pin{position:absolute;transform:translate(-50%,-100%);color:var(--panel);background:var(--ink);padding:3px 7px;font-size:13px;font-weight:700;white-space:nowrap}
+.mapbox .pin.b{background:var(--brand);color:var(--brandInk)}
+.mk{position:absolute;width:38px;height:38px;margin:-19px 0 0 -19px;display:grid;place-items:center;background:var(--act);color:var(--actInk);border:1px solid var(--actInk);border-radius:3px;transition:left .9s linear,top .9s linear;z-index:3}
+.mk .ic{width:22px;height:22px}
+.mk.sm{width:30px;height:30px;margin:-15px 0 0 -15px}
+.mk.sm .ic{width:18px;height:18px}
+.mk.sel{outline:2px solid var(--ink);outline-offset:2px}
+.mklbl{position:absolute;transform:translate(-50%,16px);font-size:12px;font-weight:700;background:var(--panel);border:1px solid var(--line);padding:0 5px;white-space:nowrap;z-index:2}
+.maplg{display:flex;gap:16px;flex-wrap:wrap;padding:10px 16px;font-size:14px;color:var(--ink2)}
+.maplg i{display:inline-block;width:18px;height:0;border-top:3px solid var(--brand);vertical-align:middle;margin-right:6px}
+.maplg i.d{border-top-style:dashed}
+
+/* список рейсов клиента */
+.fl{display:flex;gap:6px;flex-wrap:wrap}
+.fl button{min-height:44px;padding:0 14px;border:1px solid var(--line);border-radius:3px;background:var(--panel);font-weight:700}
+.fl button[aria-pressed="true"]{background:var(--sel);color:var(--selInk);border-color:var(--sel)}
+.trows{display:flex;flex-direction:column}
+.trow{display:grid;grid-template-columns:70px minmax(0,1fr) auto 110px;gap:4px 14px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line);width:100%;position:relative}
+.trow:last-child{border-bottom:0}
+.trow:hover{background:var(--soft)}
+.trow .no{font:600 22px var(--fd)}
+.trow .rt{font-weight:700;min-width:0}
+.trow .rt small{display:block;color:var(--ink2);font-weight:600;font-size:14px}
+.trow .pr{font:600 18px var(--fd);text-align:right}
+.trow .ln{grid-column:1/-1;height:4px;background:var(--soft);position:relative}
+.trow .ln i{position:absolute;left:0;top:0;bottom:0;background:var(--s-way);width:0}
+.trow.fl2{animation:flash 2s ease-out}
+@container app (max-width:760px){.trow{grid-template-columns:60px minmax(0,1fr)}.trow .st{grid-column:1/-1}.trow .pr{text-align:left;grid-column:1/-1}}
+.sum3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+@container app (max-width:760px){.sum3{grid-template-columns:minmax(0,1fr)}}
+.st3{padding:14px 16px}
+.st3 small{display:block;color:var(--ink2);font-size:14px}
+.st3 b{font:600 32px var(--fd)}
+.irow{display:grid;grid-template-columns:110px minmax(0,1fr) auto auto;gap:6px 14px;align-items:center;padding:14px 16px;border-bottom:1px solid var(--line)}
+.irow:last-child{border-bottom:0}
+.irow .am{font:600 20px var(--fd);text-align:right}
+@container app (max-width:760px){.irow{grid-template-columns:minmax(0,1fr) auto}.irow .am{text-align:right}.irow .btn{grid-column:1/-1}}
+
+/* ====== ДИСПЕТЧЕР ====== */
+.adm{min-height:100vh;display:flex;flex-direction:column}
+.ahd{display:flex;align-items:center;gap:14px;padding:8px 16px;background:var(--panel);border-bottom:1px solid var(--edge);position:sticky;top:0;z-index:5;flex-wrap:wrap}
+.ahd .brand{padding:0;margin-right:6px}
+.atabs{display:flex;gap:4px;flex:1;min-width:0;overflow-x:auto;scrollbar-width:none}
+.atab{min-height:44px;padding:0 16px;display:flex;align-items:center;gap:8px;font-weight:700;border-radius:3px;white-space:nowrap}
+.atab:hover{background:var(--soft)}
+.atab[aria-current="page"]{background:var(--sel);color:var(--selInk)}
+.atab .badge{font-size:13px;padding:0 6px;border:1px solid currentColor;border-radius:2px}
+.awho{display:flex;align-items:center;gap:8px;font-size:14px;color:var(--ink2);font-weight:600}
+.awho b{display:block;color:var(--ink);font-size:15px}
+.awho i{width:36px;height:36px;display:grid;place-items:center;background:var(--soft);font:600 15px var(--fd);font-style:normal;border:1px solid var(--line)}
+@container app (max-width:760px){.awho span{display:none}.ahd{gap:8px;padding:8px 12px}.ahd .brand span{display:none}}
+.amain{display:grid;grid-template-columns:minmax(0,1fr);flex:1;min-height:0}
+.amain.has-drawer{grid-template-columns:minmax(0,1fr) 404px}
+.apage{padding:16px;display:flex;flex-direction:column;gap:16px;min-width:0}
+@container app (min-width:900px){.apage{padding:20px 24px 40px}}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:12px}
+@container app (max-width:1099px){.kpis{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@container app (max-width:760px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpi{padding:12px 14px;background:var(--panel);border:1px solid var(--line);border-radius:3px;border-top:3px solid var(--edge);min-width:0}
+.kpi small{display:block;color:var(--ink2);font-size:14px;line-height:1.2;min-height:34px}
+.kpi b{display:block;font:600 36px var(--fd);line-height:1.1;margin-top:2px}
+.kpi b em{font:600 18px var(--fd);font-style:normal;margin-left:4px}
+.dl{display:flex;align-items:center;gap:5px;font-size:14px;font-weight:700;margin-top:2px}
+.dl .ic{width:16px;height:16px}
+.dl.good{color:var(--good)}.dl.bad{color:var(--bad)}.dl.flat{color:var(--ink2)}
+.attn{border-left:4px solid var(--act)}
+.arow{display:flex;align-items:center;gap:12px;padding:6px 16px;border-top:1px solid var(--line);flex-wrap:wrap}
+.arow:first-of-type{border-top:0}
+.arow .ic.k{color:var(--warn)}
+.arow span{flex:1;min-width:200px;font-weight:600}
+.board{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(192px,1fr);gap:10px;overflow-x:auto;padding-bottom:8px;align-items:start}
+@container app (max-width:899px){.board{grid-auto-flow:row;grid-auto-columns:auto;grid-template-columns:minmax(0,1fr);overflow:visible}}
+.col{background:var(--soft);border-radius:3px;border-top:3px solid var(--c);min-width:0;display:flex;flex-direction:column;gap:8px;padding:8px 8px 10px}
+.col h3{font:500 17px var(--fd);display:flex;align-items:center;gap:8px;color:var(--ink);padding:2px 4px 0;min-height:28px}
+.col h3 .ic{color:var(--c);width:18px;height:18px}
+.col h3 span.n{margin-left:auto;font-weight:600;font-size:15px;border:1px solid var(--line);background:var(--panel);padding:0 7px;border-radius:2px}
+.empty{color:var(--ink2);font-size:14px;padding:6px 4px 8px}
+.tc{background:var(--panel);border:1px solid var(--line);border-radius:3px;position:relative;transition:transform .15s,border-color .15s}
+.tc:hover{transform:translateY(-2px);border-color:var(--ink2)}
+.tc.sel{outline:2px solid var(--sel);outline-offset:1px}
+.tc.flash{animation:flash 2s ease-out}
+.tc-main{display:block;width:100%;padding:10px 12px 8px;min-height:44px}
+.tc-main .no{font:600 20px var(--fd);display:flex;align-items:center;gap:8px}
+.tc-main .cn{font-weight:700;font-size:15px;margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tc-main .rt{font-size:15px;color:var(--ink2);margin-top:2px;font-weight:600}
+.tc-main .mt{display:flex;align-items:center;gap:6px;font-size:14px;color:var(--ink2);margin-top:4px;flex-wrap:wrap}
+.tc .pbar{height:4px;background:var(--soft);margin:0 12px 6px;position:relative}
+.tc .pbar i{position:absolute;left:0;top:0;bottom:0;background:var(--s-way);width:0}
+.tc-f{padding:0 12px 10px;display:flex;gap:8px;flex-wrap:wrap}
+.tc .late{background:var(--bad);color:#fff;border-color:var(--bad)}
+.drawer{background:var(--panel);border-left:1px solid var(--edge);display:flex;flex-direction:column;position:sticky;top:61px;height:calc(100vh - 61px);overflow-y:auto;min-width:0}
+.dr-h{display:flex;align-items:flex-start;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:2}
+.dr-h h2{font-size:30px;font-weight:600}
+.dr-h .cl2{color:var(--ink2);font-weight:600;font-size:15px}
+.dr-h .ibtn{margin-left:auto}
+.dr-s{padding:14px 16px;border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px}
+.dr-s h4{font-size:17px;font-weight:500;color:var(--ink2)}
+.seg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.seg button{min-height:44px;padding:0 6px;border:1px solid var(--line);border-radius:3px;background:var(--panel);font-weight:700;font-size:14px;display:flex;align-items:center;justify-content:center;gap:5px;text-align:center;transition:transform .12s}
+.seg button:hover{background:var(--soft)}
+.seg button:active{transform:scale(.96)}
+.seg button[aria-pressed="true"]{background:var(--sel);color:var(--selInk);border-color:var(--sel)}
+.seg button[disabled]{opacity:.4;pointer-events:none}
+.fld{display:flex;flex-direction:column;gap:4px}
+.fld label{font-size:14px;font-weight:700;color:var(--ink2)}
+.inp{min-height:44px;padding:0 12px;border:1px solid var(--edge);border-radius:3px;background:var(--panel);width:100%;min-width:0}
+textarea.inp{padding:10px 12px;min-height:76px;resize:vertical}
+.inp[aria-invalid="true"]{border-color:var(--bad);border-width:2px}
+.err{color:var(--bad);font-size:14px;font-weight:700;min-height:0}
+.row2{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap}
+.row2 .fld{flex:1;min-width:140px}
+.lg{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.lg li{display:flex;gap:10px}.lg time{font-weight:700;font-variant-numeric:tabular-nums;color:var(--ink2);min-width:44px}
+.tbl{width:100%;border-collapse:collapse}
+.tbl th{font:500 15px var(--fd);text-align:left;color:var(--ink2);padding:10px 14px;border-bottom:1px solid var(--edge)}
+.tbl td{padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+.tbl tr:hover td{background:var(--soft)}
+.tbl .r{text-align:right}
+.tblw{overflow-x:auto}
+@container app (max-width:760px){.tbl .hide-s{display:none}}
+.dbars{display:flex;flex-direction:column;gap:8px}
+.dbar{display:grid;grid-template-columns:130px minmax(0,1fr) 96px;align-items:center;gap:10px;font-weight:700;font-size:15px}
+.dbar .tr{height:18px;background:var(--soft);position:relative}
+.dbar .tr i{position:absolute;left:0;top:0;bottom:0;width:100%;background:var(--s-unl);transform-origin:left;transition:transform .8s cubic-bezier(.2,.7,.2,1)}
+.dbar .tr i.ok{background:var(--s-asg)}
+.dbar .v{text-align:right;font-variant-numeric:tabular-nums}
+@container app (max-width:760px){.dbar{grid-template-columns:96px minmax(0,1fr) 82px;font-size:14px}}
+.grow-pre .dbar .tr i{transform:scaleX(0)}
+
+/* ====== БОТ ====== */
+.botpc{display:grid;grid-template-columns:minmax(0,1fr) 392px minmax(0,1fr);gap:24px;align-items:start;padding:24px;justify-content:center}
+@container app (max-width:1099px){.botpc{grid-template-columns:392px;justify-content:center}.botpc .mir{display:none}}
+.mir{display:flex;flex-direction:column;gap:12px}
+.mir h3{font-size:18px;font-weight:500;color:var(--ink2)}
+.mir .panel{padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.mir .st-w{font:600 30px var(--fd);text-transform:uppercase}
+.pf{width:392px;height:760px;border:1px solid var(--edge);border-radius:28px;overflow:hidden;box-shadow:0 0 0 8px var(--soft);background:var(--panel);display:flex;flex-direction:column}
+.chat{display:flex;flex-direction:column;min-height:100vh;background:var(--panel);width:100%}
+.pf .chat{min-height:0;height:100%}
+.ch-h{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--brand);color:var(--brandInk)}
+.ch-h .av{width:40px;height:40px;background:var(--act);color:var(--actInk);display:grid;place-items:center;border-radius:50%;border:1px solid var(--actInk)}
+.ch-h b{display:block;font:500 18px var(--fd);line-height:1.1}
+.ch-h small{opacity:.85;font-size:13px}
+.ch-w{display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--soft);border-bottom:1px solid var(--line);font-size:14px;font-weight:700}
+.ch-w select{flex:1;min-width:0;min-height:44px;border:1px solid var(--line);background:var(--panel);padding:0 8px;border-radius:3px}
+.msgs{flex:1;min-height:0;overflow-y:auto;padding:14px 12px;display:flex;flex-direction:column;gap:8px;background:var(--bg)}
+.pf .msgs{overflow-y:auto}
+.msg{max-width:86%;padding:8px 12px 6px;border-radius:12px;font-size:16px;line-height:1.35;position:relative}
+.msg time{display:block;text-align:right;font-size:12px;opacity:.7;margin-top:2px}
+.msg.in{background:var(--panel);border:1px solid var(--line);align-self:flex-start;border-top-left-radius:3px}
+.msg.out{background:var(--act);color:var(--actInk);align-self:flex-end;border-top-right-radius:3px;font-weight:700}
+.msg.sys{align-self:center;background:var(--soft);font-size:14px;padding:3px 12px;border-radius:12px;max-width:94%;text-align:center}
+.msg.nw{animation:msgin .28s ease-out}
+.msg b{font-weight:700}
+.kb{padding:10px 12px 12px;background:var(--panel);border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.kb .r3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.kb .btn{min-height:52px;padding:0 6px;font-size:16px;flex-direction:column;gap:2px;line-height:1.1}
+.kb .btn .ic{width:20px;height:20px}
+.kb .btn.next{background:var(--act);color:var(--actInk);border-color:var(--actInk)}
+.kb .btn.cur{background:var(--sel);color:var(--selInk)}.kb .btn.cur[disabled]{opacity:1}
+.kb .fake{min-height:44px;border:1px solid var(--line);border-radius:22px;padding:0 14px;display:flex;align-items:center;color:var(--ink2);font-size:15px;background:var(--bg)}
+
+/* ====== СЛОИ ====== */
+#ov{position:fixed;inset:0;z-index:50;pointer-events:none}
+#stage.phone #ov{position:absolute}
+#ov:not(:empty){pointer-events:auto}
+.scrim{position:absolute;inset:0;background:rgba(10,18,22,.55);animation:fadein .2s}
+.sheet{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 32px));max-height:calc(100% - 32px);overflow-y:auto;background:var(--panel);border:1px solid var(--edge);border-radius:3px;animation:pop .22s ease-out;display:flex;flex-direction:column}
+@media (max-width:620px){.sheet{left:0;right:0;bottom:0;top:auto;transform:none;width:100%;max-height:92%;animation:slide .26s ease-out;border-left:0;border-right:0;border-bottom:0}}
+#stage.phone .sheet{left:0;right:0;bottom:0;top:auto;transform:none;width:100%;max-height:92%;animation:slide .26s ease-out;border-left:0;border-right:0;border-bottom:0}
+.sh-h{display:flex;align-items:center;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line);position:sticky;top:0;background:var(--panel);z-index:1}
+.sh-h h2{font-size:26px;font-weight:600}
+.sh-h .ibtn{margin-left:auto}
+.sh-b{padding:16px;display:flex;flex-direction:column;gap:14px}
+.sh-f{padding:12px 16px 16px;border-top:1px solid var(--line);display:flex;gap:10px;flex-wrap:wrap;position:sticky;bottom:0;background:var(--panel)}
+.sh-f .btn{flex:1}
+.stp{display:flex;gap:6px;font-weight:700;font-size:14px;color:var(--ink2)}
+.stp span{flex:1;border-top:3px solid var(--line);padding-top:4px}
+.stp span.on{border-color:var(--act);color:var(--ink)}
+.okbig{display:flex;flex-direction:column;align-items:flex-start;gap:10px}
+.okbig .no{font:700 60px var(--fd);line-height:1}
+.hs{counter-reset:s;list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+.hs li{counter-increment:s;display:grid;grid-template-columns:34px 1fr;gap:10px}
+.hs li::before{content:counter(s);width:34px;height:34px;background:var(--act);color:var(--actInk);display:grid;place-items:center;font:600 20px var(--fd);border:1px solid var(--actInk)}
+.hs b{display:block}
+.hs .btn{margin-top:6px}
+#toasts{position:fixed;left:50%;bottom:20px;transform:translateX(-50%);display:flex;flex-direction:column;gap:8px;z-index:80;align-items:center;pointer-events:none;width:min(440px,calc(100% - 24px))}
+body.m-client #toasts{bottom:20px}
+@media (max-width:520px){body.m-client #toasts{bottom:78px}}
+#stage.phone ~ #toasts{display:none}
+#stage.phone #toasts{position:absolute;bottom:76px}
+.toast{background:var(--ink);color:var(--bg);padding:12px 16px;border-radius:3px;font-weight:700;animation:pop .22s ease-out;width:100%;border-left:4px solid var(--act)}
+
+/* пульт П3: вертикальная капсула у правого края */
+.pult{position:fixed;right:12px;top:50%;transform:translateY(-50%);z-index:60;display:flex;flex-direction:column;gap:2px;padding:6px;width:76px;border:1px solid var(--edge);border-radius:14px;background:var(--panel)}
+.pult button{min-height:48px;border-radius:9px;font-weight:700;font-size:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;line-height:1.05;text-align:center;padding:2px}
+.pult button .ic{width:20px;height:20px}
+.pult button:hover{background:var(--soft)}
+.pult button[aria-pressed="true"]{background:var(--sel);color:var(--selInk)}
+.pult .sep{height:1px;background:var(--line);margin:3px 6px}
+.gear{display:none}
+@media (max-width:520px){
+  .pult{display:none;top:auto;bottom:80px;right:12px;transform:none;width:196px;border-radius:6px}
+  .pult button{flex-direction:row;justify-content:flex-start;gap:10px;font-size:16px;padding:0 10px}
+  .pult .dev{display:none}
+  body.pult-open .pult{display:flex;animation:pop .2s}
+  .gear{display:grid;position:fixed;right:12px;bottom:80px;width:44px;height:44px;place-items:center;z-index:61;background:var(--panel);border:1px solid var(--edge);border-radius:50%}
+  body.pult-open .gear{bottom:auto;top:12px}
+  body.has-sheet .gear,body.has-sheet .pult{display:none}
+  body.m-driver .gear,body.m-admin .gear{bottom:16px}
+  body.m-driver .pult,body.m-admin .pult{bottom:68px}
+}
+body.clean .pult,body.clean .gear{display:none!important}
+
+@keyframes fadein{from{opacity:0}to{opacity:1}}
+@keyframes pop{from{opacity:0;transform:translate(-50%,-46%) scale(.97)}to{opacity:1}}
+.toast{animation-name:fadein}
+@keyframes slide{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes flash{0%,60%{background:var(--hl)}100%{background:transparent}}
+@keyframes msgin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+.ent .hero{animation:rise .7s ease-out both}
+.ent .cols>*{animation:rise .7s .12s ease-out both}
+.ent .kpis{animation:rise .6s ease-out both}
+.pn-in{animation:fadein .18s}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body class="m-client">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="m12 5 7 7-7 7" /></symbol><symbol id="i-badge" viewBox="0 0 24 24"><path d="M3.85 8.62a4 4 0 0 1 4.78-4.77 4 4 0 0 1 6.74 0 4 4 0 0 1 4.78 4.78 4 4 0 0 1 0 6.74 4 4 0 0 1-4.77 4.78 4 4 0 0 1-6.75 0 4 4 0 0 1-4.78-4.77 4 4 0 0 1 0-6.76Z" /></symbol><symbol id="i-banknote" viewBox="0 0 24 24"><rect width="20" height="12" x="2" y="6" rx="2" /> <circle cx="12" cy="12" r="2" /> <path d="M6 12h.01M18 12h.01" /></symbol><symbol id="i-bell" viewBox="0 0 24 24"><path d="M10.268 21a2 2 0 0 0 3.464 0" /> <path d="M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .74-1.673C19.41 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326" /></symbol><symbol id="i-bot" viewBox="0 0 24 24"><path d="M12 8V4H8" /> <rect width="16" height="12" x="4" y="8" rx="2" /> <path d="M2 14h2" /> <path d="M20 14h2" /> <path d="M15 13v2" /> <path d="M9 13v2" /></symbol><symbol id="i-boxes" viewBox="0 0 24 24"><path d="M2.97 12.92A2 2 0 0 0 2 14.63v3.24a2 2 0 0 0 .97 1.71l3 1.8a2 2 0 0 0 2.06 0L12 19v-5.5l-5-3-4.03 2.42Z" /> <path d="m7 16.5-4.74-2.85" /> <path d="m7 16.5 5-3" /> <path d="M7 16.5v5.17" /> <path d="M12 13.5V19l3.97 2.38a2 2 0 0 0 2.06 0l3-1.8a2 2 0 0 0 .97-1.71v-3.24a2 2 0 0 0-.97-1.71L17 10.5l-5 3Z" /> <path d="m17 16.5-5-3" /> <path d="m17 16.5 4.74-2.85" /> <path d="M17 16.5v5.17" /> <path d="M7.97 4.42A2 2 0 0 0 7 6.13v4.37l5 3 5-3V6.13a2 2 0 0 0-.97-1.71l-3-1.8a2 2 0 0 0-2.06 0l-3 1.8Z" /> <path d="M12 8 7.26 5.15" /> <path d="m12 8 4.74-2.85" /> <path d="M12 13.5V8" /></symbol><symbol id="i-chart-no-axes-column" viewBox="0 0 24 24"><path d="M5 21v-6" /> <path d="M12 21V3" /> <path d="M19 21V9" /></symbol><symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol><symbol id="i-chevron-down" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol><symbol id="i-chevron-right" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol><symbol id="i-circle" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /></symbol><symbol id="i-circle-check" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="m16 9-5.5 5.5L8 12" /></symbol><symbol id="i-circle-help" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" /> <path d="M12 17h.01" /></symbol><symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <path d="M12 6v6l4 2" /></symbol><symbol id="i-container" viewBox="0 0 24 24"><path d="M22 7.7c0-.6-.4-1.2-.8-1.5l-6.3-3.9a1.72 1.72 0 0 0-1.7 0l-10.3 6c-.5.2-.9.8-.9 1.4v6.6c0 .5.4 1.2.8 1.5l6.3 3.9a1.72 1.72 0 0 0 1.7 0l10.3-6c.5-.3.9-1 .9-1.5Z" /> <path d="M10 21.9V14L2.1 9.1" /> <path d="m10 14 11.9-6.9" /> <path d="M14 19.8v-8.1" /> <path d="M18 17.5V9.4" /></symbol><symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2" ry="2" /> <path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2" /></symbol><symbol id="i-delete" viewBox="0 0 24 24"><path d="M10 5a2 2 0 0 0-1.344.519l-6.328 5.74a1 1 0 0 0 0 1.481l6.328 5.741A2 2 0 0 0 10 19h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2z" /> <path d="m12 9 6 6" /> <path d="m18 9-6 6" /></symbol><symbol id="i-ellipsis" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1" /> <circle cx="19" cy="12" r="1" /> <circle cx="5" cy="12" r="1" /></symbol><symbol id="i-file-text" viewBox="0 0 24 24"><path d="M6 22a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h8a2.4 2.4 0 0 1 1.704.706l3.588 3.588A2.4 2.4 0 0 1 20 8v12a2 2 0 0 1-2 2z" /> <path d="M14 2v5a1 1 0 0 0 1 1h5" /> <path d="M10 9H8" /> <path d="M16 13H8" /> <path d="M16 17H8" /></symbol><symbol id="i-filter" viewBox="0 0 24 24"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z" /></symbol><symbol id="i-focus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" /> <path d="M3 7V5a2 2 0 0 1 2-2h2" /> <path d="M17 3h2a2 2 0 0 1 2 2v2" /> <path d="M21 17v2a2 2 0 0 1-2 2h-2" /> <path d="M7 21H5a2 2 0 0 1-2-2v-2" /></symbol><symbol id="i-frame" viewBox="0 0 24 24"><line x1="22" x2="2" y1="6" y2="6" /> <line x1="22" x2="2" y1="18" y2="18" /> <line x1="6" x2="6" y1="2" y2="22" /> <line x1="18" x2="18" y1="2" y2="22" /></symbol><symbol id="i-ghost" viewBox="0 0 24 24"><path d="M15 10v1" /> <path d="M7.528 20.472a1.6 1.6 0 012.277 0l1.057 1.056a1.6 1.6 0 002.276 0l1.057-1.056a1.6 1.6 0 012.277 0l1.114 1.114a1.4 1.4 0 002.414-1V10a8 8 0 00-16 0v10.586a1.4 1.4 0 002.414 1z" /> <path d="M9 10v1" /></symbol><symbol id="i-grid" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M3 9h18" /> <path d="M3 15h18" /> <path d="M9 3v18" /> <path d="M15 3v18" /></symbol><symbol id="i-group" viewBox="0 0 24 24"><path d="M3 7V5c0-1.1.9-2 2-2h2" /> <path d="M17 3h2c1.1 0 2 .9 2 2v2" /> <path d="M21 17v2c0 1.1-.9 2-2 2h-2" /> <path d="M7 21H5c-1.1 0-2-.9-2-2v-2" /> <rect width="7" height="5" x="7" y="7" rx="1" /> <rect width="7" height="5" x="10" y="12" rx="1" /></symbol><symbol id="i-hash" viewBox="0 0 24 24"><line x1="4" x2="20" y1="9" y2="9" /> <line x1="4" x2="20" y1="15" y2="15" /> <line x1="10" x2="8" y1="3" y2="21" /> <line x1="16" x2="14" y1="3" y2="21" /></symbol><symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /> <path d="M3 3v5h5" /> <path d="M12 7v5l4 2" /></symbol><symbol id="i-hourglass" viewBox="0 0 24 24"><path d="M5 22h14" /> <path d="M5 2h14" /> <path d="M17 22v-4.172a2 2 0 0 0-.586-1.414L12 12l-4.414 4.414A2 2 0 0 0 7 17.828V22" /> <path d="M7 2v4.172a2 2 0 0 0 .586 1.414L12 12l4.414-4.414A2 2 0 0 0 17 6.172V2" /></symbol><symbol id="i-key" viewBox="0 0 24 24"><path d="m2 21 9.6-9.6" /> <path d="m7.5 15.5 2.3 2.3a1 1 0 0 1 0 1.4l-2.1 2.1a1 1 0 0 1-1.4 0L4 19" /> <circle cx="15.5" cy="7.5" r="5.5" /></symbol><symbol id="i-layout-dashboard" viewBox="0 0 24 24"><rect width="7" height="9" x="3" y="3" rx="1" /> <rect width="7" height="5" x="14" y="3" rx="1" /> <rect width="7" height="9" x="14" y="12" rx="1" /> <rect width="7" height="5" x="3" y="16" rx="1" /></symbol><symbol id="i-letter-spacing" viewBox="0 0 24 24"><path d="M15 14H9" /> <path d="M21 3v18" /> <path d="M3 3v18" /> <path d="m8 16 3.453-7.648a.6.6 0 011.094.001L16 16" /></symbol><symbol id="i-line-height" viewBox="0 0 24 24"><path d="M15 14H9" /> <path d="M21 21H3" /> <path d="M21 3H3" /> <path d="m8 16 3.453-7.648a.6.6 0 011.094.001L16 16" /></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /> <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" /></symbol><symbol id="i-list" viewBox="0 0 24 24"><path d="M3 5h.01" /> <path d="M3 12h.01" /> <path d="M3 19h.01" /> <path d="M8 5h13" /> <path d="M8 12h13" /> <path d="M8 19h13" /></symbol><symbol id="i-list-checks" viewBox="0 0 24 24"><path d="M13 5h8" /> <path d="M13 12h8" /> <path d="M13 19h8" /> <path d="m3 17 2 2 4-4" /> <path d="m3 7 2 2 4-4" /></symbol><symbol id="i-map" viewBox="0 0 24 24"><path d="M14.106 5.553a2 2 0 0 0 1.788 0l3.659-1.83A1 1 0 0 1 21 4.619v12.764a1 1 0 0 1-.553.894l-4.553 2.277a2 2 0 0 1-1.788 0l-4.212-2.106a2 2 0 0 0-1.788 0l-3.659 1.83A1 1 0 0 1 3 19.381V6.618a1 1 0 0 1 .553-.894l4.553-2.277a2 2 0 0 1 1.788 0z" /> <path d="M15 5.764v15" /> <path d="M9 3.236v15" /></symbol><symbol id="i-margin" viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1" /> <path d="M21 6v12" /> <path d="M3 6v12" /> <path d="M6 21h12" /> <path d="M6 3h12" /></symbol><symbol id="i-margin-bottom" viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1" /> <path d="M3 21h18" /></symbol><symbol id="i-margin-left" viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1" /> <path d="M3 3v18" /></symbol><symbol id="i-margin-right" viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1" /> <path d="M21 3v18" /></symbol><symbol id="i-margin-top" viewBox="0 0 24 24"><rect x="9" y="9" width="6" height="6" rx="1" /> <path d="M3 3h18" /></symbol><symbol id="i-message-circle" viewBox="0 0 24 24"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719" /></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M20.985 12.486a9 9 0 1 1-9.473-9.472c.405-.022.617.46.402.803a6 6 0 0 0 8.268 8.268c.344-.215.825-.004.803.401" /></symbol><symbol id="i-opacity" viewBox="0 0 24 24"><path d="M12 3h.01" /> <path d="M12 9h.01" /> <path d="M15 6h.01" /> <path d="M18 3h.01" /> <path d="M21 6v13a2 2 0 0 1-2 2H6" /> <path d="M3 12h.01" /> <path d="M3 18h.01" /> <path d="M3 6h.01" /> <path d="M6 15h.01" /> <path d="M6 3h.01" /> <path d="M6 9h.01" /> <path d="M9 12h.01" /> <path d="M9 6h.01" /></symbol><symbol id="i-option" viewBox="0 0 24 24"><path d="M14 3h7" /> <path d="M3 3h5.28a1 1 0 0 1 .948.684l5.544 16.632a1 1 0 0 0 .949.684H21" /></symbol><symbol id="i-package" viewBox="0 0 24 24"><path d="M11 21.73a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73z" /> <path d="M12 22V12" /> <polyline points="3.29 7 12 12 20.71 7" /> <path d="m7.5 4.27 9 5.15" /></symbol><symbol id="i-park" viewBox="0 0 24 24"><path d="M12 18h10" /> <path d="M13.248 9.998A4.5 4.5 0 0 0 11.75 8.6V8a1 1 0 0 0-7.5 0 4.9 4.9 0 0 0 2.25 9H8" /> <path d="m15 14-2 6" /> <path d="m19 14 2 6" /> <path d="M21 14h-8" /> <path d="M8 20v-5.922a2 2 0 0 0-.586-1.414L6.5 11.75" /> <path d="M9.205 12.795 8 14" /> <circle cx="19" cy="6" r="2" /></symbol><symbol id="i-pen" viewBox="0 0 24 24"><path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.83l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.32a2 2 0 0 0 .83-.497z" /></symbol><symbol id="i-phone" viewBox="0 0 24 24"><path d="M13.832 16.568a1 1 0 0 0 1.213-.303l.355-.465A2 2 0 0 1 17 15h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2A18 18 0 0 1 2 4a2 2 0 0 1 2-2h3a2 2 0 0 1 2 2v3a2 2 0 0 1-.8 1.6l-.468.351a1 1 0 0 0-.292 1.233 14 14 0 0 0 6.392 6.384" /></symbol><symbol id="i-pin" viewBox="0 0 24 24"><path d="M12 17v5" /> <path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V7a1 1 0 0 1 1-1 2 2 0 0 0 0-4H8a2 2 0 0 0 0 4 1 1 0 0 1 1 1z" /></symbol><symbol id="i-plus" viewBox="0 0 24 24"><path d="M5 12h14" /> <path d="M12 5v14" /></symbol><symbol id="i-pointer" viewBox="0 0 24 24"><path d="M22 14a8 8 0 0 1-8 8" /> <path d="M18 11v-1a2 2 0 0 0-2-2a2 2 0 0 0-2 2" /> <path d="M14 10V9a2 2 0 0 0-2-2a2 2 0 0 0-2 2v1" /> <path d="M10 9.5V4a2 2 0 0 0-2-2a2 2 0 0 0-2 2v10" /> <path d="M18 11a2 2 0 1 1 4 0v3a8 8 0 0 1-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 0 1 2.83-2.82L7 15" /></symbol><symbol id="i-receipt" viewBox="0 0 24 24"><path d="M12 17V7" /> <path d="M16 8h-6a2 2 0 0 0 0 4h4a2 2 0 0 1 0 4H8" /> <path d="M4 3a1 1 0 0 1 1-1 1.3 1.3 0 0 1 .7.2l.933.6a1.3 1.3 0 0 0 1.4 0l.934-.6a1.3 1.3 0 0 1 1.4 0l.933.6a1.3 1.3 0 0 0 1.4 0l.933-.6a1.3 1.3 0 0 1 1.4 0l.934.6a1.3 1.3 0 0 0 1.4 0l.933-.6A1.3 1.3 0 0 1 19 2a1 1 0 0 1 1 1v18a1 1 0 0 1-1 1 1.3 1.3 0 0 1-.7-.2l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.934.6a1.3 1.3 0 0 1-1.4 0l-.933-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-1.4 0l-.934-.6a1.3 1.3 0 0 0-1.4 0l-.933.6a1.3 1.3 0 0 1-.7.2 1 1 0 0 1-1-1z" /></symbol><symbol id="i-repeat" viewBox="0 0 24 24"><path d="m17 2 4 4-4 4" /> <path d="M3 11v-1a4 4 0 0 1 4-4h14" /> <path d="m7 22-4-4 4-4" /> <path d="M21 13v1a4 4 0 0 1-4 4H3" /></symbol><symbol id="i-replace" viewBox="0 0 24 24"><path d="M14 4a1 1 0 0 1 1-1" /> <path d="M15 10a1 1 0 0 1-1-1" /> <path d="M21 4a1 1 0 0 0-1-1" /> <path d="M21 9a1 1 0 0 1-1 1" /> <path d="m3 7 3 3 3-3" /> <path d="M6 10V5a2 2 0 0 1 2-2h2" /> <rect x="3" y="14" width="7" height="7" rx="1" /></symbol><symbol id="i-road" viewBox="0 0 24 24"><path d="M12 17v4" /> <path d="M12 5V3" /> <path d="M12 9v3" /> <path d="M2.077 18.449A2 2 0 0 0 4 21h16a2 2 0 0 0 1.924-2.55l-4-14A2 2 0 0 0 16 3H8a2 2 0 0 0-1.924 1.45z" /></symbol><symbol id="i-route" viewBox="0 0 24 24"><circle cx="6" cy="19" r="3" /> <path d="M9 19h8.5a3.5 3.5 0 0 0 0-7h-11a3.5 3.5 0 0 1 0-7H15" /> <circle cx="18" cy="5" r="3" /></symbol><symbol id="i-rows" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M3 12h18" /></symbol><symbol id="i-ruler" viewBox="0 0 24 24"><path d="M21.3 15.3a2.4 2.4 0 0 1 0 3.4l-2.6 2.6a2.4 2.4 0 0 1-3.4 0L2.7 8.7a2.41 2.41 0 0 1 0-3.4l2.6-2.6a2.41 2.41 0 0 1 3.4 0Z" /> <path d="m14.5 12.5 2-2" /> <path d="m11.5 9.5 2-2" /> <path d="m8.5 6.5 2-2" /> <path d="m17.5 15.5 2-2" /></symbol><symbol id="i-scale" viewBox="0 0 24 24"><path d="M12 3v18" /> <path d="m19 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M3 7h1a17 17 0 0 0 8-2 17 17 0 0 0 8 2h1" /> <path d="m5 8 3 8a5 5 0 0 1-6 0zV7" /> <path d="M7 21h10" /></symbol><symbol id="i-scroll" viewBox="0 0 24 24"><path d="M19 17V5a2 2 0 0 0-2-2H4" /> <path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3" /></symbol><symbol id="i-search" viewBox="0 0 24 24"><path d="m21 21-4.34-4.34" /> <circle cx="11" cy="11" r="8" /></symbol><symbol id="i-section" viewBox="0 0 24 24"><path d="M16 5a4 3 0 0 0-8 0c0 4 8 3 8 7a4 3 0 0 1-8 0" /> <path d="M8 19a4 3 0 0 0 8 0c0-4-8-3-8-7a4 3 0 0 1 8 0" /></symbol><symbol id="i-send" viewBox="0 0 24 24"><path d="M14.536 21.686a.5.5 0 0 0 .937-.024l6.5-19a.496.496 0 0 0-.635-.635l-19 6.5a.5.5 0 0 0-.024.937l7.93 3.18a2 2 0 0 1 1.112 1.11z" /> <path d="m21.854 2.147-10.94 10.939" /></symbol><symbol id="i-settings" viewBox="0 0 24 24"><path d="M9.671 4.136a2.34 2.34 0 0 1 4.659 0 2.34 2.34 0 0 0 3.319 1.915 2.34 2.34 0 0 1 2.33 4.033 2.34 2.34 0 0 0 0 3.831 2.34 2.34 0 0 1-2.33 4.033 2.34 2.34 0 0 0-3.319 1.915 2.34 2.34 0 0 1-4.659 0 2.34 2.34 0 0 0-3.32-1.915 2.34 2.34 0 0 1-2.33-4.033 2.34 2.34 0 0 0 0-3.831A2.34 2.34 0 0 1 6.35 6.051a2.34 2.34 0 0 0 3.319-1.915" /> <circle cx="12" cy="12" r="3" /></symbol><symbol id="i-sheet" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2" ry="2" /> <line x1="3" x2="21" y1="9" y2="9" /> <line x1="3" x2="21" y1="15" y2="15" /> <line x1="9" x2="9" y1="9" y2="21" /> <line x1="15" x2="15" y1="9" y2="21" /></symbol><symbol id="i-slice" viewBox="0 0 24 24"><path d="M11 16.586V19a1 1 0 0 1-1 1H2L18.37 3.63a1 1 0 1 1 3 3l-9.663 9.663a1 1 0 0 1-1.414 0L8 14" /></symbol><symbol id="i-smartphone" viewBox="0 0 24 24"><rect width="14" height="20" x="5" y="2" rx="2" ry="2" /> <path d="M12 18h.01" /></symbol><symbol id="i-split" viewBox="0 0 24 24"><path d="M16 3h5v5" /> <path d="M8 3H3v5" /> <path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3" /> <path d="m15 9 6-6" /></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4" /> <path d="M12 2v2" /> <path d="M12 20v2" /> <path d="m4.93 4.93 1.41 1.41" /> <path d="m17.66 17.66 1.41 1.41" /> <path d="M2 12h2" /> <path d="M20 12h2" /> <path d="m6.34 17.66-1.41 1.41" /> <path d="m19.07 4.93-1.41 1.41" /></symbol><symbol id="i-table" viewBox="0 0 24 24"><path d="M12 3v18" /> <rect width="18" height="18" x="3" y="3" rx="2" /> <path d="M3 9h18" /> <path d="M3 15h18" /></symbol><symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.586 2.586A2 2 0 0 0 11.172 2H4a2 2 0 0 0-2 2v7.172a2 2 0 0 0 .586 1.414l8.704 8.704a2.426 2.426 0 0 0 3.42 0l6.58-6.58a2.426 2.426 0 0 0 0-3.42z" /> <circle cx="7.5" cy="7.5" r=".5" fill="currentColor" /></symbol><symbol id="i-target" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" /> <circle cx="12" cy="12" r="6" /> <circle cx="12" cy="12" r="2" /></symbol><symbol id="i-text" viewBox="0 0 24 24"><path d="M21 5H3" /> <path d="M15 12H3" /> <path d="M17 19H3" /></symbol><symbol id="i-triangle-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3" /> <path d="M12 9v4" /> <path d="M12 17h.01" /></symbol><symbol id="i-truck" viewBox="0 0 24 24"><path d="M14 18V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v11a1 1 0 0 0 1 1h2" /> <path d="M15 18H9" /> <path d="M19 18h2a1 1 0 0 0 1-1v-3.65a1 1 0 0 0-.22-.624l-3.48-4.35A1 1 0 0 0 17.52 8H14" /> <circle cx="17" cy="18" r="2" /> <circle cx="7" cy="18" r="2" /></symbol><symbol id="i-user" viewBox="0 0 24 24"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" /> <circle cx="12" cy="7" r="4" /></symbol><symbol id="i-view" viewBox="0 0 24 24"><path d="M21 17v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2" /> <path d="M21 7V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v2" /> <circle cx="12" cy="12" r="1" /> <path d="M18.944 12.33a1 1 0 0 0 0-.66 7.5 7.5 0 0 0-13.888 0 1 1 0 0 0 0 .66 7.5 7.5 0 0 0 13.888 0" /></symbol><symbol id="i-wallet" viewBox="0 0 24 24"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" /> <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" /></symbol><symbol id="i-x" viewBox="0 0 24 24"><path d="M18 6 6 18" /> <path d="m6 6 12 12" /></symbol></defs></svg>
+<div id="stage"><div id="frame"><div id="view"></div></div><div id="ov"></div><div id="toasts" aria-live="polite"></div></div>
+<div class="pult" id="pult" role="toolbar" aria-label="Пульт демо"></div>
+<button class="gear" id="gear" data-a="pult-toggle" aria-label="Пульт демо"><svg class="ic"><use href="#i-settings"/></svg></button>
+<script>
+'use strict';
+/* ---------- утилиты ---------- */
+const Q=location.search,STILL=/still/.test(Q),CLEAN=/clean/.test(Q);
+const RM=window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const ic=(n,c)=>`<svg class="ic${c?' '+c:''}" aria-hidden="true"><use href="#i-${n}"/></svg>`;
+const fmt=n=>Math.round(n).toLocaleString('ru-RU').replace(/ /g,' ').replace(/\s/g,' ')+' ₽';
+const fmtn=n=>Math.round(n).toLocaleString('ru-RU').replace(/\s/g,' ');
+const NOW0=11*60+40;
+const nowMin=()=>STILL?NOW0:NOW0+Math.floor((Date.now()-S.t0)/20000);
+const tm=m=>String(Math.floor(m/60)%24).padStart(2,'0')+':'+String(((m%60)+60)%60).padStart(2,'0');
+
+/* ---------- данные (вымышленные) ---------- */
+const TOWNS={klu:{n:'Ключевск',x:150,y:360,l:'b'},zar:{n:'Заречье',x:420,y:170,l:'t'},olh:{n:'Ольховка',x:560,y:430,l:'b'},sok:{n:'Соколов',x:830,y:260,l:'t'},dub:{n:'Дубравск',x:330,y:530,l:'b'},gri:{n:'Гридино',x:700,y:95,l:'t'},mal:{n:'Малинов',x:890,y:480,l:'b'},ver:{n:'Вершинино',x:95,y:150,l:'t'}};
+const TN=Object.keys(TOWNS);
+const DRV=[['d1','Сергей Нестеров'],['d2','Артём Воронин'],['d3','Павел Громов'],['d4','Михаил Бельский'],['d5','Денис Орлов'],['d6','Руслан Тарасов'],['d7','Виктор Лебедев'],['d8','Андрей Мельников'],['d9','Олег Кириллов'],['d10','Тимур Исаев']].map(a=>({id:a[0],n:a[1]}));
+const TRK=[['t1','А214ВС','Газель 1,5 т','d1'],['t2','В507КР','Фургон 5 т','d2'],['t3','Е330ОМ','Фура 20 т','d3'],['t4','К118НТ','Фургон 5 т','d4'],['t5','М642АХ','Газель 1,5 т','d5'],['t6','О901УС','Фура 20 т','d6'],['t7','Р275ЕН','Рефрижератор 10 т','d7'],['t8','Х453ТА','Фургон 3 т','d8'],['t9','С330АК','Газель 1,5 т','d9'],['t10','Т708МО','Фургон 5 т','d10']].map(a=>({id:a[0],pl:a[1],ty:a[2],drv:a[3]}));
+const ORDER=['new','assigned','loading','enroute','unloading','done'];
+const ST={new:{n:'Новый',ic:'clock',c:'--s-new',h:'Заявка принята',sub:'Ищем машину и водителя. Статус обновится сам.'},
+ assigned:{n:'Назначен',ic:'user',c:'--s-asg',h:'Машина назначена',sub:'Водитель получил рейс в Telegram и скоро приедет на загрузку.'},
+ loading:{n:'Загрузка',ic:'boxes',c:'--s-load',h:'Загрузка',sub:'Машина на месте, груз грузится.'},
+ enroute:{n:'В пути',ic:'truck',c:'--s-way',h:'В пути',sub:'Машина едет по маршруту.'},
+ unloading:{n:'Разгрузка',ic:'package',c:'--s-unl',h:'Разгрузка',sub:'Машина на месте выгрузки.'},
+ done:{n:'Доставлен',ic:'circle-check',c:'--s-done',h:'Доставлен',sub:'Рейс завершён, счёт выставлен.'}};
+const BTN={loading:'Загрузился',enroute:'В пути',done:'Разгрузился'};
+const BICON={loading:'boxes',enroute:'truck',done:'package'};
+const CLIENTS=['Север-Опт','Окна-Центр','ТехноСклад','Фермер-Маркет','Дом Кровли'];
+const CARGO=['Продукты','Стройматериалы','Бытовая техника','Паллеты','Мебель'];
+
+const hs=s=>{let h=7;for(const c of s)h=(h*31+c.charCodeAt(0))%9973;return h};
+const EDGES=[['klu','zar'],['klu','dub'],['klu','ver'],['klu','olh'],['ver','zar'],['zar','gri'],['zar','olh'],['gri','sok'],['olh','sok'],['olh','dub'],['olh','mal'],['sok','mal']];
+const RC={};
+function edge(a,b){
+  const rev=a>b,p=rev?b:a,q=rev?a:b,k=p+'-'+q;
+  if(!RC[k]){
+    const A=TOWNS[p],B=TOWNS[q],dx=B.x-A.x,dy=B.y-A.y,L=Math.hypot(dx,dy),nx=-dy/L,ny=dx/L,h=hs(k);
+    const o=[((h%7)-3)*.02,(((h>>3)%7)-3)*.026,(((h>>5)%7)-3)*.018],pts=[[A.x,A.y]];
+    [.3,.62,.84].forEach((t,i)=>pts.push([A.x+dx*t+nx*L*o[i],A.y+dy*t+ny*L*o[i]]));
+    pts.push([B.x,B.y]);RC[k]=pts;
+  }
+  return rev?RC[k].slice().reverse():RC[k];
+}
+function RT(a,b){
+  const k='r'+a+b;if(RC[k])return RC[k];
+  const prev={},q=[a];prev[a]=null;
+  while(q.length){const x=q.shift();if(x===b)break;EDGES.forEach(e=>{const y=e[0]===x?e[1]:e[1]===x?e[0]:null;if(y&&!(y in prev)){prev[y]=x;q.push(y)}})}
+  const path=[];for(let x=b;x;x=prev[x])path.unshift(x);
+  let pts=[];for(let i=1;i<path.length;i++){const e=edge(path[i-1],path[i]);pts=pts.concat(i>1?e.slice(1):e)}
+  const cum=[0];for(let i=1;i<pts.length;i++)cum.push(cum[i-1]+Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]));
+  return RC[k]={pts,cum,len:cum[cum.length-1]};
+}
+const kmOf=(a,b)=>Math.round(RT(a,b).len*.34);
+function posAt(r,f){
+  const d=Math.max(0,Math.min(1,f))*r.len;let i=1;
+  while(i<r.cum.length-1&&r.cum[i]<d)i++;
+  const s=(d-r.cum[i-1])/((r.cum[i]-r.cum[i-1])||1),A=r.pts[i-1],B=r.pts[i];
+  return {x:A[0]+(B[0]-A[0])*s,y:A[1]+(B[1]-A[1])*s,i};
+}
+function partial(r,f){
+  const p=posAt(r,f),out=r.pts.slice(0,p.i).map(a=>a.slice());out.push([p.x,p.y]);return out;
+}
+const dstr=pts=>'M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L');
+
+function seedTrip(id,client,a,b,cargo,wt,st,prog,truck,price,o){
+  o=o||{};
+  const tr=truck?TRK.find(x=>x.id===truck):null;
+  const t={id,client,a,b,cargo,wt,st,prog,truck,drv:tr?tr.drv:null,price,note:o.note||'',day:o.day||'today',late:o.late||0,inv:o.inv||null,log:[]};
+  const n=ORDER.indexOf(st),end=(o.end||NOW0-20),by=['client','dsp','bot','bot','auto','bot'];
+  for(let i=0;i<=n;i++){if(i===1&&!truck)continue;t.log.push({t:end-(n-i)*38,s:ORDER[i],by:by[i]})}
+  return t;
+}
+const S={route:'#/',device:'pc',cl:'Север-Опт',focus:4182,sel:null,drv:'d1',tfilt:'all',sheet:null,co:null,flash:null,reminded:{},exp:{},botN:143,kpiDone:false,barsDone:false,t0:Date.now(),nextId:4191,pultOpen:false,asg:{},perr:{},entered:false,wide:false,
+ trips:[
+  seedTrip(4182,'Север-Опт','klu','zar','Продукты',6.2,'enroute',.46,'t1',28400),
+  seedTrip(4190,'Север-Опт','klu','gri','Паллеты',4.1,'assigned',0,'t2',31800,{end:NOW0-35}),
+  seedTrip(4185,'ТехноСклад','olh','mal','Бытовая техника',3.4,'new',0,null,24600,{end:NOW0-12}),
+  seedTrip(4186,'Фермер-Маркет','ver','klu','Продукты',8,'new',0,null,26200,{end:NOW0-7,note:'Нужна машина с холодом'}),
+  seedTrip(4189,'Дом Кровли','dub','sok','Стройматериалы',12,'assigned',0,'t3',38900,{end:NOW0-50}),
+  seedTrip(4188,'Окна-Центр','klu','olh','Мебель',2.2,'loading',0,'t4',22100,{end:NOW0-15}),
+  seedTrip(4181,'Фермер-Маркет','ver','zar','Продукты',5.5,'enroute',.58,'t7',17600,{late:25}),
+  seedTrip(4179,'ТехноСклад','mal','olh','Бытовая техника',2.8,'enroute',.72,'t5',16900),
+  seedTrip(4178,'Дом Кровли','olh','sok','Стройматериалы',9.5,'unloading',1,'t6',27300,{end:NOW0-5}),
+  seedTrip(4177,'Окна-Центр','dub','klu','Мебель',3.1,'done',1,'t8',12900,{end:NOW0-60,inv:{ago:0,paid:false}}),
+  seedTrip(4176,'Север-Опт','klu','olh','Паллеты',5,'done',1,'t9',21500,{end:NOW0-120,inv:{ago:2,paid:true}}),
+  seedTrip(4171,'Север-Опт','dub','klu','Продукты',7.4,'done',1,'t10',19600,{day:'old',inv:{ago:3,paid:false}}),
+  seedTrip(4170,'Окна-Центр','klu','sok','Мебель',4.2,'done',1,'t8',41800,{day:'old',inv:{ago:20,paid:false}}),
+  seedTrip(4168,'Фермер-Маркет','zar','klu','Продукты',6,'done',1,'t1',22300,{day:'old',inv:{ago:5,paid:false}}),
+  seedTrip(4166,'ТехноСклад','mal','klu','Бытовая техника',5.2,'done',1,'t5',36500,{day:'old',inv:{ago:11,paid:false}}),
+  seedTrip(4163,'Север-Опт','klu','sok','Паллеты',8.8,'done',1,'t3',31200,{day:'old',inv:{ago:12,paid:false}}),
+  seedTrip(4160,'Дом Кровли','dub','olh','Стройматериалы',11,'done',1,'t6',24700,{day:'old',inv:{ago:9,paid:true}})
+ ]};
+S.trips.forEach(t=>{if(t.inv)t.inv.no='СЧ-'+t.id});
+const trip=id=>S.trips.find(t=>t.id===id);
+const trk=id=>TRK.find(t=>t.id===id);
+const drv=id=>DRV.find(d=>d.id===id);
+const busyTrk=(id,except)=>S.trips.some(t=>t.truck===id&&t.st!=='done'&&t.id!==except);
+const busyDrv=(id,except)=>S.trips.some(t=>t.drv===id&&t.st!=='done'&&t.id!==except);
+const rtName=t=>TOWNS[t.a].n+' → '+TOWNS[t.b].n;
+const kmT=t=>kmOf(t.a,t.b);
+const kmLeft=t=>Math.max(0,Math.round(kmT(t)*(1-t.prog)));
+const etaT=t=>tm(nowMin()+kmLeft(t));
+function invSt(t){
+  const i=t.inv;if(!i)return null;
+  if(i.paid)return {n:'Оплачен',c:'--good',k:'paid'};
+  const late=i.ago-7;
+  if(late>0)return {n:'Просрочен '+late+' дн.',c:'--bad',k:'late',late};
+  return {n:'Выставлен, срок '+(late===0?'сегодня':(-late)+' дн.'),c:'--warn',k:'due'};
+}
+const unpaid=cl=>S.trips.filter(t=>t.inv&&!t.inv.paid&&(!cl||t.client===cl));
+const sumP=l=>l.reduce((a,t)=>a+t.price,0);
+const chip=(st)=>`<span class="chip" style="--c:var(${ST[st].c})">${ic(ST[st].ic)}${ST[st].n}</span>`;
+const chipI=(t)=>{const s=invSt(t);return `<span class="chip" style="--c:var(${s.c})">${ic(s.k==='paid'?'circle-check':s.k==='late'?'triangle-alert':'receipt')}${s.n}</span>`};
+
+/* ---------- изменение состояния ---------- */
+function logAdd(t,s,by){t.log.push({t:nowMin(),s,by})}
+function setStatus(id,s,by){
+  const t=trip(id);if(!t||t.st===s)return false;
+  if(s!=='new'&&!t.truck)return false;
+  t.st=s;logAdd(t,s,by);
+  if(s==='assigned'||s==='loading')t.prog=0;
+  if(s==='enroute')t.prog=Math.max(t.prog,.02);
+  if(s==='unloading'||s==='done')t.prog=1;
+  if(s==='done'&&!t.inv){t.inv={ago:0,paid:false,no:'СЧ-'+t.id};toast('Счёт '+t.inv.no+' выставлен клиенту: '+fmt(t.price))}
+  if(by==='bot')S.botN++;
+  S.flash=id;clearTimeout(S.ft);S.ft=setTimeout(()=>{S.flash=null;softRender()},2200);
+  return true;
+}
+function assign(id,truckId,drvId){
+  const t=trip(id);t.truck=truckId;t.drv=drvId;
+  if(t.st==='new'){t.st='assigned';logAdd(t,'assigned','dsp')}
+  S.flash=id;clearTimeout(S.ft);S.ft=setTimeout(()=>{S.flash=null;softRender()},2200);
+}
+function toast(m){
+  const el=document.createElement('div');el.className='toast';el.textContent=m;
+  const root=$('#stage.phone #toasts')||$('#toasts');root.appendChild(el);
+  while(root.children.length>3)root.firstChild.remove();
+  setTimeout(()=>el.remove(),3200);
+}
+
+/* ---------- карта ---------- */
+function mapHtml(list,focus,opt){
+  opt=opt||{};
+  const roads=new Set(EDGES.map(e=>e.join('-')));
+  let svg='<svg viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true">';
+  for(let x=100;x<1000;x+=100)svg+=`<line x1="${x}" y1="0" x2="${x}" y2="600" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke" opacity=".55"/>`;
+  for(let y=100;y<600;y+=100)svg+=`<line x1="0" y1="${y}" x2="1000" y2="${y}" stroke="var(--line)" stroke-width="1" vector-effect="non-scaling-stroke" opacity=".55"/>`;
+  svg+=`<path d="M0 470 C 120 430 200 470 300 440 S 480 330 560 300 S 760 330 1000 250" fill="none" stroke="var(--water)" stroke-width="16" vector-effect="non-scaling-stroke" opacity=".9"/>`;
+  [...roads].forEach(k=>{const [a,b]=k.split('-'),d=dstr(edge(a,b));
+    svg+=`<path d="${d}" fill="none" stroke="var(--roadEdge)" stroke-width="7" stroke-linejoin="round" vector-effect="non-scaling-stroke"/><path d="${d}" fill="none" stroke="var(--road)" stroke-width="4" stroke-linejoin="round" vector-effect="non-scaling-stroke"/>`});
+  list.forEach(t=>{
+    const r=RT(t.a,t.b),isF=t.id===focus||list.length===1;
+    svg+=`<path d="${dstr(r.pts)}" fill="none" stroke="var(--brand)" stroke-width="${isF?4:3}" stroke-dasharray="${isF?'9 8':'3 7'}" stroke-linejoin="round" vector-effect="non-scaling-stroke" opacity="${isF?.85:.55}"/>`;
+    svg+=`<path class="pass" data-t="${t.id}" d="${dstr(partial(r,t.prog))}" fill="none" stroke="var(--brand)" stroke-width="${isF?6:4}" stroke-linejoin="round" stroke-linecap="round" vector-effect="non-scaling-stroke"/>`;
+  });
+  svg+='</svg>';
+  let h='';
+  TN.forEach(k=>{if(list.length===1&&(k===list[0].a||k===list[0].b)){const T=TOWNS[k];h+=`<i class="tn${k==='klu'?' hub':''}" style="left:${T.x/10}%;top:${T.y/6}%"></i>`;return}const T=TOWNS[k],dx=T.l==='l'?-1:T.l==='r'?1:0,dy=T.l==='t'?-1:T.l==='b'?1:0;
+    h+=`<i class="tn${k==='klu'?' hub':''}" style="left:${T.x/10}%;top:${T.y/6}%"></i><span class="tl-lbl" style="left:calc(${T.x/10}% + ${dx*44}px);top:calc(${T.y/6}% + ${dy*17}px)">${T.n}${k==='klu'?' (склад)':''}</span>`});
+  list.forEach(t=>{
+    const r=RT(t.a,t.b),A=TOWNS[t.a],B=TOWNS[t.b];
+    if(list.length===1){
+      h+=`<span class="pin" style="left:${A.x/10}%;top:calc(${A.y/6}% - 10px)">Откуда: ${A.n}</span><span class="pin b" style="left:${B.x/10}%;top:calc(${B.y/6}% - 10px)">Куда: ${B.n}</span>`;
+    }
+    if(t.truck&&t.st!=='new'){
+      const p=posAt(r,t.prog);
+      h+=`<div class="mk${list.length>1?' sm':''}${t.id===S.sel&&list.length>1?' sel':''}" data-t="${t.id}" style="left:${p.x/10}%;top:${p.y/6}%" title="Рейс ${t.id}">${ic('truck')}</div>`;
+      if(list.length>1)h+=`<span class="mklbl" data-lt="${t.id}" style="left:${p.x/10}%;top:${p.y/6}%">№${t.id}</span>`;
+    }
+  });
+  return `<div class="mapbox" role="img" aria-label="Схема маршрута">${svg}${h}</div>`;
+}
+
+/* ---------- картинка: грузовик ---------- */
+const TRUCK_ART=`<svg class="art" viewBox="0 0 360 150" aria-hidden="true"><line x1="0" y1="138" x2="360" y2="138" stroke="#F2FAFC" stroke-opacity=".5" stroke-width="2" stroke-dasharray="14 10"/><rect x="14" y="22" width="206" height="92" fill="#F2FAFC"/><rect x="14" y="22" width="206" height="14" fill="#FFC20E"/><rect x="30" y="52" width="70" height="8" fill="#0F5A73" opacity=".35"/><rect x="30" y="68" width="110" height="8" fill="#0F5A73" opacity=".25"/><rect x="30" y="84" width="48" height="8" fill="#0F5A73" opacity=".25"/><path d="M226 50h58l34 34v30h-92z" fill="#FFC20E" stroke="#1B1500" stroke-width="2"/><path d="M262 58h16l24 26h-40z" fill="#C9E7F0" stroke="#1B1500" stroke-width="2"/><rect x="226" y="112" width="92" height="8" fill="#1B1500"/><circle cx="60" cy="122" r="16" fill="#1B1500"/><circle cx="60" cy="122" r="6" fill="#F2FAFC"/><circle cx="104" cy="122" r="16" fill="#1B1500"/><circle cx="104" cy="122" r="6" fill="#F2FAFC"/><circle cx="270" cy="122" r="16" fill="#1B1500"/><circle cx="270" cy="122" r="6" fill="#F2FAFC"/></svg>`;
+const LOGO=`<a class="brand" aria-label="Трасса"><i>${ic('truck')}</i><span>Трасса</span></a>`;
+
+/* ---------- клиент ---------- */
+function clTrips(){return S.trips.filter(t=>t.client===S.cl).sort((a,b)=>b.id-a.id)}
+function rulerHtml(t){
+  const f=t.truck&&t.st!=='new'?t.prog:0,A=TOWNS[t.a].n,B=TOWNS[t.b].n;
+  const left=t.st==='done'?'Доставлен':t.st==='new'?'Машина не назначена':`Осталось <span data-kml="${t.id}">${kmLeft(t)}</span> км`;
+  return `<div class="ruler" role="img" aria-label="Линейка маршрута ${kmT(t)} км"><div class="rl-left">${left}</div><div class="rl-tot">всего ${kmT(t)} км</div><div class="rl-line"><i class="rl-done" data-t="${t.id}" style="width:${f*100}%"></i></div><div class="rl-ticks"></div><div class="rl-truck" data-t="${t.id}" style="left:${f*100}%;${t.st==='new'?'opacity:.45':''}">${ic('truck')}</div><div class="rl-ab"><span>${A}</span><span>${B}</span></div></div>`;
+}
+function tlHtml(t){
+  const ci=ORDER.indexOf(t.st);
+  return '<ol class="tl">'+ORDER.map((s,i)=>{
+    const ev=t.log.find(l=>l.s===s),cls=i<ci?'done':i===ci?'cur':'todo';
+    let sm='';
+    if(s==='assigned'&&t.truck&&i<=ci)sm=`${trk(t.truck).pl}, ${trk(t.truck).ty}`;
+    if(s==='enroute'&&i===ci)sm=`Прибытие около <span data-eta="${t.id}">${etaT(t)}</span>`;
+    if(s==='enroute'&&i<ci)sm='Отметка водителя в Telegram';
+    if(s==='loading'&&i<=ci)sm='Отметка водителя в Telegram';
+    if(s==='unloading'&&i<=ci)sm='Машина прибыла по адресу';
+    return `<li class="${cls}"><span class="nd">${i<ci?ic('check'):i===ci?ic('clock'):''}</span><div><b>${ST[s].h}</b>${sm?`<small>${sm}</small>`:''}</div><span class="when num">${ev&&i<=ci?tm(ev.t):''}</span></li>`;
+  }).join('')+'</ol>';
+}
+function clientTrip(){
+  const t=trip(S.focus)||clTrips()[0];
+  if(!t)return '<div class="panel pb">Рейсов пока нет. Закажите первый.</div>';
+  const s=ST[t.st],tr=t.truck?trk(t.truck):null,d=t.drv?drv(t.drv):null,is=invSt(t);
+  return `<section class="hero" aria-label="Статус рейса">
+  <div class="top"><span class="tag">${ic('route','')} Рейс №${t.id}</span><span>${TOWNS[t.a].n} → ${TOWNS[t.b].n}</span><span class="num" style="margin-left:auto">${ic('clock')} <span data-clock>${tm(nowMin())}</span></span></div>
+  <h1 id="hst">${s.h}</h1>
+  <p class="sub">${s.sub}</p>
+  <div class="route"><span>${t.cargo}, ${String(t.wt).replace('.',',')} т</span>${tr?`<span>${tr.pl}</span>`:''}</div>
+  ${rulerHtml(t)}
+  ${TRUCK_ART}
+  </section>
+  <div class="cols">
+   <div style="display:flex;flex-direction:column;gap:16px;min-width:0">
+    <section class="panel"><div class="ph">${ic('list-checks')} Этапы рейса</div>${tlHtml(t)}</section>
+    <section class="panel"><div class="ph">${ic('package')} Рейс</div><div class="pb"><dl class="kv">
+      <dt>Груз</dt><dd>${esc(t.cargo)}, ${String(t.wt).replace('.',',')} т</dd>
+      <dt>Машина</dt><dd>${tr?esc(tr.pl)+', '+esc(tr.ty):'ещё не назначена'}</dd>
+      <dt>Водитель</dt><dd>${d?esc(d.n):'ещё не назначен'}</dd>
+      <dt>Стоимость</dt><dd class="num" id="cprice">${fmt(t.price)}</dd>
+      ${t.note?`<dt>Комментарий</dt><dd>${esc(t.note)}</dd>`:''}</dl></div>
+      <div class="invbox">${t.inv?`<div><small class="demo-note">Счёт ${esc(t.inv.no)}</small><br><b class="num">${fmt(t.price)}</b></div>${chipI(t)}<button class="btn sm" data-a="go" data-v="#/invoices">Все счета</button>`:`<div>${ic('receipt')}</div><span style="flex:1;min-width:180px">Счёт по рейсу выставится сам, когда рейс будет доставлен.</span>`}</div></section>
+   </div>
+   <section class="panel"><div class="ph">${ic('map')} Машина на карте<small>время в демо ускорено</small></div>${mapHtml([t],t.id)}
+    <div class="maplg"><span><i></i>пройдено</span><span><i class="d"></i>впереди</span><span>${ic('link')} Ссылка для клиента: <b>trassa.demo/r/${t.id}</b></span></div></section>
+  </div>`;
+}
+function clientTrips(){
+  const l=clTrips(),act=l.filter(t=>t.st!=='done'),dn=l.filter(t=>t.st==='done');
+  const sh=S.tfilt==='act'?act:S.tfilt==='done'?dn:l;
+  return `<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap"><h1 style="font-size:36px">Мои рейсы</h1><button class="btn cta" style="margin-left:auto" data-a="order-open">${ic('plus')} Заказать рейс</button></div>
+  <div class="fl" role="group" aria-label="Фильтр"><button data-a="tf" data-v="all" aria-pressed="${S.tfilt==='all'}">Все · ${l.length}</button><button data-a="tf" data-v="act" aria-pressed="${S.tfilt==='act'}">Активные · ${act.length}</button><button data-a="tf" data-v="done" aria-pressed="${S.tfilt==='done'}">Доставленные · ${dn.length}</button></div>
+  <section class="panel"><div class="trows">${sh.length?sh.map(t=>`<button class="trow${S.flash===t.id?' fl2':''}" data-a="open-trip" data-v="${t.id}"><span class="no num">№${t.id}</span><span class="rt">${rtName(t)}<small>${esc(t.cargo)}, ${String(t.wt).replace('.',',')} т${t.truck?' · '+trk(t.truck).pl:''}</small></span><span class="st">${chip(t.st)}</span><span class="pr num">${fmt(t.price)}</span>${t.st!=='done'&&t.st!=='new'?`<span class="ln"><i data-pb="${t.id}" style="width:${t.prog*100}%"></i></span>`:''}</button>`).join(''):'<div class="pb">Здесь пока пусто.</div>'}</div></section>`;
+}
+function clientInv(){
+  const l=clTrips().filter(t=>t.inv),pend=clTrips().filter(t=>!t.inv);
+  const up=unpaid(S.cl),late=up.filter(t=>invSt(t).k==='late');
+  const paid=l.filter(t=>t.inv.paid);
+  return `<h1 style="font-size:36px">Счета</h1>
+  <div class="sum3"><div class="panel st3"><small>К оплате</small><b class="num" id="cdue">${fmt(sumP(up))}</b></div><div class="panel st3"><small>Из них просрочено</small><b class="num" style="color:${late.length?'var(--bad)':'inherit'}">${fmt(sumP(late))}</b></div><div class="panel st3"><small>Оплачено</small><b class="num">${fmt(sumP(paid))}</b></div></div>
+  <section class="panel"><div class="ph">${ic('receipt')} Счета по рейсам<small>${l.length}</small></div>${l.length?l.map(t=>`<div class="irow"><span><b class="num">${esc(t.inv.no)}</b><br><small class="demo-note">рейс №${t.id}</small></span><span style="min-width:0">${rtName(t)}</span><span>${chipI(t)}</span><span class="am num">${fmt(t.price)}</span><button class="btn sm ghost" data-a="dl" data-v="${t.id}">${ic('file-text')} Скачать счёт</button></div>`).join(''):'<div class="pb">Счетов пока нет.</div>'}</section>
+  ${pend.length?`<section class="panel"><div class="ph">${ic('hourglass')} Ждут доставки<small>${pend.length}</small></div><div class="pb" style="display:flex;flex-direction:column;gap:8px">${pend.map(t=>`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b class="num">№${t.id}</b><span style="flex:1;min-width:160px">${rtName(t)}</span>${chip(t.st)}<span class="num">${fmt(t.price)}</span></div>`).join('')}<p class="demo-note">Счёт выставится автоматически, когда водитель отметит разгрузку.</p></div></section>`:''}`;
+}
+function clientView(){
+  const r=S.route,act=clTrips().filter(t=>t.st!=='done').length;
+  const nav=[['#/','route','Рейс'],['#/trips','truck','Мои рейсы'],['#/invoices','receipt','Счета']];
+  const body=r==='#/trips'?clientTrips():r==='#/invoices'?clientInv():clientTrip();
+  return `<div class="cl"><nav class="rail" aria-label="Разделы">${LOGO}${nav.map(n=>`<button class="rnav" data-a="go" data-v="${n[0]}"${r===n[0]?' aria-current="page"':''}>${ic(n[1])}${n[2]}${n[0]==='#/trips'&&act?`<span class="badge">${act}</span>`:''}</button>`).join('')}<div class="rco"><b>${esc(S.cl)}</b>Вы открыли ссылку рейса. Входить не нужно.<br><span class="demo-note">Демо, данные вымышленные</span></div></nav>
+  <div><main class="cmain"><div class="mtop">${LOGO}<span class="tag">${esc(S.cl)}</span></div>${body}<p class="demo-note">Демо «Трасса»: данные вымышленные, ничего не сохраняется и не отправляется.</p></main>
+  <nav class="bnav" aria-label="Разделы">${nav.map(n=>`<button data-a="go" data-v="${n[0]}"${r===n[0]?' aria-current="page"':''}>${ic(n[1])}${n[2]}</button>`).join('')}</nav></div></div>`;
+}
+
+/* ---------- диспетчер ---------- */
+const KP=[
+ {k:'today',l:'Рейсов сегодня',y:57,f:()=>51+S.trips.filter(t=>t.day==='today').length,up:1},
+ {k:'way',l:'В пути сейчас',y:4,f:()=>S.trips.filter(t=>t.st==='enroute').length,up:0},
+ {k:'free',l:'Рейсов без машины',y:1,f:()=>S.trips.filter(t=>t.st==='new').length,up:-1},
+ {k:'debt',l:'Долги клиентов',y:227400,f:()=>sumP(unpaid()),up:-1,money:1},
+ {k:'bot',l:'Статусов из бота за день',y:120,f:()=>S.botN,up:1}];
+function kpiHtml(){
+  return `<div class="kpis">${KP.map(k=>{
+    const v=k.f(),d=v-k.y,good=d===0?'flat':((d>0)===(k.up>0)?'good':'bad'),sg=d>0?'+':d<0?'−':'';
+    const dv=k.money?fmt(Math.abs(d)):fmtn(Math.abs(d));
+    return `<div class="kpi"><small>${k.l}</small><b class="num" data-count="${v}" data-money="${k.money?1:0}">${k.money?fmt(v):fmtn(v)}</b><div class="dl ${good}">${ic(d>0?'arrow-right':d<0?'arrow-right':'arrow-right').replace('class="ic"','class="ic" style="transform:rotate('+(d>0?-45:d<0?45:0)+'deg)"')}${d===0?'без изменений':sg+dv+' к вчера'}</div></div>`}).join('')}</div>`;
+}
+function attnHtml(){
+  const rows=[];
+  S.trips.filter(t=>t.st==='new').forEach(t=>rows.push(`<div class="arow">${ic('triangle-alert','k')}<span>Рейс №${t.id} (${esc(t.client)}, ${rtName(t)}) без машины</span><button class="btn sm cta" style="min-height:44px;font-size:16px" data-a="open" data-v="${t.id}">Назначить</button></div>`));
+  S.trips.filter(t=>t.late&&t.st==='enroute').forEach(t=>rows.push(`<div class="arow">${ic('clock','k')}<span>Рейс №${t.id} опаздывает на ${t.late} мин, клиент ${esc(t.client)}</span><button class="btn sm" data-a="open" data-v="${t.id}">Открыть рейс</button></div>`));
+  S.trips.filter(t=>invSt(t)&&invSt(t).k==='late'&&!S.reminded[t.id]).sort((a,b)=>invSt(b).late-invSt(a).late).slice(0,1).forEach(t=>rows.push(`<div class="arow">${ic('receipt','k')}<span>Счёт ${esc(t.inv.no)} (${esc(t.client)}, ${fmt(t.price)}) просрочен на ${invSt(t).late} дн.</span><button class="btn sm" data-a="remind-inv" data-v="${t.id}">Напомнить</button></div>`));
+  return `<section class="panel attn"><div class="ph">${ic('bell')} Требует внимания<small>${rows.length}</small></div>${rows.length?rows.join(''):'<div class="pb">Всё под контролем: рейсов без машины и просрочек нет.</div>'}</section>`;
+}
+function cardHtml(t){
+  const sel=S.sel===t.id,ps=S.flash===t.id;
+  return `<article class="tc${sel?' sel':''}${ps?' flash':''}"><button class="tc-main" data-a="open" data-v="${t.id}" aria-label="Рейс ${t.id}, ${esc(t.client)}, ${rtName(t)}"><span class="no num">№${t.id}${t.late&&t.st==='enroute'?'<span class="tag late">+'+t.late+' мин</span>':''}</span><span class="cn" style="display:block">${esc(t.client)}</span><span class="rt" style="display:block">${rtName(t)}</span><span class="mt">${esc(t.cargo)}, ${String(t.wt).replace('.',',')} т${t.truck?' · '+trk(t.truck).pl:' · нет машины'}</span></button>${t.st==='enroute'?`<div class="pbar"><i data-pb="${t.id}" style="width:${t.prog*100}%"></i></div>`:''}${t.st==='new'?`<div class="tc-f"><button class="btn sm cta" style="font-size:16px;min-height:44px" data-a="open" data-v="${t.id}">Назначить</button></div>`:''}</article>`;
+}
+function boardHtml(){
+  return `<div class="board" aria-label="Доска рейсов">${ORDER.map(s=>{
+    const l=S.trips.filter(t=>t.st===s&&(s!=='done'||t.day==='today')).sort((a,b)=>b.id-a.id);
+    return `<section class="col" style="--c:var(${ST[s].c})" data-col="${s}"><h3>${ic(ST[s].ic)}${ST[s].n}<span class="n num">${l.length}</span></h3>${l.length?l.map(cardHtml).join(''):'<div class="empty">Пусто</div>'}</section>`}).join('')}</div>`;
+}
+function drawerHtml(t){
+  const ci=ORDER.indexOf(t.st),editable=t.st==='new'||t.st==='assigned',a=S.asg[t.id]||{truck:t.truck||'',drv:t.drv||''},tr=t.truck?trk(t.truck):null,e=S.perr[t.id]||{};
+  const nxt=ORDER[ci+1];
+  const trOpts=TRK.map(x=>`<option value="${x.id}"${a.truck===x.id?' selected':''}${busyTrk(x.id,t.id)?' disabled':''}>${x.pl} · ${x.ty}${busyTrk(x.id,t.id)?' (занята)':''}</option>`).join('');
+  const drOpts=DRV.map(x=>`<option value="${x.id}"${a.drv===x.id?' selected':''}${busyDrv(x.id,t.id)?' disabled':''}>${x.n}${busyDrv(x.id,t.id)?' (в рейсе)':''}</option>`).join('');
+  const is=invSt(t);
+  return `<div class="dr-h"><div><h2 class="num">№${t.id}</h2><div class="cl2">${esc(t.client)} · ${rtName(t)}</div></div><button class="ibtn" data-a="close-card" aria-label="Закрыть карточку">${ic('x')}</button></div>
+  <div class="dr-s"><h4>Статус</h4><div>${chip(t.st)}</div>
+   <div class="seg" role="group" aria-label="Сменить статус">${ORDER.map(s=>`<button data-a="set-st" data-v="${s}" aria-pressed="${t.st===s}"${(!t.truck&&s!=='new')?' disabled':''}>${ic(ST[s].ic,'')}${ST[s].n}</button>`).join('')}</div>
+   ${nxt&&t.truck?`<button class="btn cta" data-a="next-st">${ST[nxt].n} ${ic('arrow-right')}</button>`:''}
+   ${!t.truck?'<p class="demo-note">Сначала назначьте машину и водителя, потом статус можно менять.</p>':''}</div>
+  <div class="dr-s"><h4>Машина и водитель</h4>
+   ${editable?`<div class="fld"><label for="sl-truck">Машина</label><select id="sl-truck" class="inp" data-c="asg-truck"><option value="">Выберите машину</option>${trOpts}</select></div>
+   <div class="fld"><label for="sl-drv">Водитель</label><select id="sl-drv" class="inp" data-c="asg-drv"><option value="">Выберите водителя</option>${drOpts}</select></div>
+   <div class="err" id="e-asg">${e.asg?esc(e.asg):''}</div>
+   <button class="btn cta" data-a="do-asg">${t.st==='new'?'Назначить рейс':'Сохранить'}</button>`:
+   `<dl class="kv"><dt>Машина</dt><dd>${tr?esc(tr.pl)+', '+esc(tr.ty):'нет'}</dd><dt>Водитель</dt><dd>${t.drv?esc(drv(t.drv).n):'нет'}</dd></dl><p class="demo-note">После выезда машину не меняют.</p>`}
+   ${t.drv?`<button class="btn sm" data-a="to-bot" data-v="${t.id}">${ic('send')} Показать в боте водителя</button>`:''}</div>
+  <div class="dr-s"><h4>Стоимость рейса</h4>
+   <div class="row2"><div class="fld"><label for="pr-in">Сумма, ₽</label><input id="pr-in" class="inp num" inputmode="numeric" value="${t.price}"${t.inv?' disabled':''} aria-invalid="${e.price?'true':'false'}"></div><button class="btn" data-a="price-save"${t.inv?' disabled':''}>Сохранить</button></div>
+   <div class="err" id="e-price">${e.price?esc(e.price):''}</div>${t.inv?'<p class="demo-note">Счёт выставлен, сумма закрыта.</p>':'<p class="demo-note">Сумма сразу видна клиенту в его рейсе и попадёт в счёт.</p>'}</div>
+  <div class="dr-s"><h4>Счёт</h4>${t.inv?`<div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><b class="num" style="font:600 20px var(--fd)">${esc(t.inv.no)} · ${fmt(t.price)}</b>${chipI(t)}</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">${t.inv.paid?'':`<button class="btn" data-a="inv-paid" data-v="${t.id}">${ic('banknote')} Отметить оплаченным</button><button class="btn ghost" data-a="remind-inv" data-v="${t.id}">${ic('bell')} Напомнить</button>`}</div>`:'<p>Счёт выставится сам, когда рейс станет «Доставлен».</p>'}</div>
+  <div class="dr-s"><h4>Груз и ссылка клиенту</h4><dl class="kv"><dt>Груз</dt><dd>${esc(t.cargo)}, ${String(t.wt).replace('.',',')} т</dd>${t.note?`<dt>Комментарий</dt><dd>${esc(t.note)}</dd>`:''}<dt>Ссылка</dt><dd>trassa.demo/r/${t.id}</dd></dl>
+   <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn sm" data-a="copy-link" data-v="${t.id}">${ic('copy')} Копировать ссылку</button><button class="btn sm" data-a="as-client" data-v="${t.id}">${ic('user')} Открыть как клиент</button></div></div>
+  <div class="dr-s"><h4>Журнал рейса</h4><ul class="lg">${t.log.slice().reverse().map(l=>`<li><time>${tm(l.t)}</time><span>${logText(l)}</span></li>`).join('')}</ul></div>`;
+}
+const logText=l=>({new:'Заявка от клиента',assigned:'Назначены машина и водитель',loading:l.by==='bot'?'Водитель: «Загрузился»':'Диспетчер: загрузка',enroute:l.by==='bot'?'Водитель: «В пути»':'Диспетчер: в пути',unloading:l.by==='auto'?'Машина прибыла, разгрузка':'Диспетчер: разгрузка',done:l.by==='bot'?'Водитель: «Разгрузился», рейс доставлен':'Диспетчер: рейс доставлен'}[l.s]);
+function adminShell(inner,drawer){
+  const nb=S.trips.filter(t=>t.st==='new').length,r=S.route;
+  const tabs=[['#/a','layout-dashboard','Доска',nb],['#/a/debts','wallet','Долги',0],['#/a/park','truck','Парк',0]];
+  return `<div class="adm"><header class="ahd">${LOGO}<nav class="atabs" aria-label="Разделы">${tabs.map(x=>`<button class="atab" data-a="go" data-v="${x[0]}"${r===x[0]?' aria-current="page"':''}>${ic(x[1])}${x[2]}${x[3]?`<span class="badge">${x[3]}</span>`:''}</button>`).join('')}</nav><div class="awho"><span><b>Анна К.</b>диспетчер</span><i>АК</i></div></header>
+  <div class="amain${drawer?' has-drawer':''}"><div class="apage">${inner}<p class="demo-note">Демо «Трасса»: данные вымышленные. Показаны 10 машин из 25.</p></div>${drawer?`<aside class="drawer pn-in" aria-label="Карточка рейса">${drawer}</aside>`:''}</div></div>`;
+}
+function adminBoard(){
+  const t=S.sel?trip(S.sel):null,wide=S.wide;
+  return adminShell(`${kpiHtml()}${attnHtml()}${boardHtml()}`,t&&wide?drawerHtml(t):'');
+}
+function adminDebts(){
+  const g={};unpaid().forEach(t=>{(g[t.client]=g[t.client]||[]).push(t)});
+  const rows=Object.keys(g).map(c=>({c,l:g[c],s:sumP(g[c]),late:Math.max(...g[c].map(t=>Math.max(0,t.inv.ago-7)))})).sort((a,b)=>b.s-a.s);
+  const tot=rows.reduce((a,r)=>a+r.s,0),mx=Math.max(1,...rows.map(r=>r.s)),lateS=rows.filter(r=>r.late>0).reduce((a,r)=>a+r.s,0);
+  return adminShell(`<div style="display:flex;align-items:flex-end;gap:16px;flex-wrap:wrap"><div><h1 style="font-size:36px">Долги клиентов</h1><p class="demo-note">Неоплаченные счета по рейсам</p></div></div>
+  <div class="sum3"><div class="panel st3"><small>Всего должны</small><b class="num" id="dtot">${fmt(tot)}</b></div><div class="panel st3"><small>Из них просрочено</small><b class="num" style="color:var(--bad)">${fmt(lateS)}</b></div><div class="panel st3"><small>Клиентов с долгом</small><b class="num">${rows.length}</b></div></div>
+  <section class="panel"><div class="ph">${ic('chart-no-axes-column')} Кто сколько должен</div><div class="pb dbars ${S.barsDone?'':'grow-pre'}" id="dbars">${rows.map(r=>`<div class="dbar"><span>${esc(r.c)}</span><span class="tr"><i class="${r.late>0?'':'ok'}" style="transform:scaleX(${(r.s/mx).toFixed(3)})" data-w="${(r.s/mx).toFixed(3)}"></i></span><span class="v num">${fmt(r.s)}</span></div>`).join('')||'<p>Долгов нет.</p>'}</div></section>
+  <section class="panel"><div class="tblw"><table class="tbl"><thead><tr><th>Клиент</th><th class="hide-s">Счетов</th><th>Просрочка</th><th class="r">Сумма</th><th></th></tr></thead><tbody>${rows.map(r=>`<tr><td><b>${esc(r.c)}</b></td><td class="hide-s num">${r.l.length}</td><td>${r.late>0?`<span class="chip" style="--c:var(--bad)">${ic('triangle-alert')}${r.late} дн.</span>`:'<span class="chip" style="--c:var(--ink2)">В срок</span>'}</td><td class="r num"><b>${fmt(r.s)}</b></td><td class="r"><div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end"><button class="btn sm ghost" data-a="exp" data-v="${esc(r.c)}" aria-expanded="${!!S.exp[r.c]}">${ic(S.exp[r.c]?'chevron-down':'chevron-right')} Счета</button> <button class="btn sm" data-a="remind-cl" data-v="${esc(r.c)}">${S.reminded[r.c]?ic('check')+' Напомнили':ic('bell')+' Напомнить'}</button></div></td></tr>${S.exp[r.c]?r.l.map(t=>`<tr><td colspan="5" style="background:var(--soft);padding:8px 14px"><div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap"><b class="num">${esc(t.inv.no)}</b><span style="flex:1;min-width:150px">${rtName(t)}</span>${chipI(t)}<b class="num">${fmt(t.price)}</b><button class="btn sm" data-a="inv-paid" data-v="${t.id}">${ic('banknote')} Оплачен</button></div></td></tr>`).join(''):''}`).join('')}</tbody></table></div></section>`,'');
+}
+function adminPark(){
+  const mov=S.trips.filter(t=>t.truck&&t.st!=='done'&&t.st!=='new');
+  return adminShell(`<h1 style="font-size:36px">Парк</h1>
+  <section class="panel"><div class="ph">${ic('map')} Машины на линии<small>${mov.length}</small></div>${mapHtml(mov,S.sel)}</section>
+  <section class="panel"><div class="tblw"><table class="tbl"><thead><tr><th>Машина</th><th class="hide-s">Тип</th><th>Водитель</th><th>Состояние</th></tr></thead><tbody>${TRK.map(x=>{const t=S.trips.find(q=>q.truck===x.id&&q.st!=='done');
+   return `<tr><td class="num"><b>${x.pl}</b></td><td class="hide-s">${x.ty}</td><td>${esc(drv(t?t.drv:x.drv).n)}</td><td>${t?`<button class="btn sm ghost" data-a="open-park" data-v="${t.id}">№${t.id} · ${ST[t.st].n}</button>`:'<span class="chip" style="--c:var(--good)">'+ic('circle-check')+'Свободна</span>'}</td></tr>`}).join('')}</tbody></table></div></section>`,'');
+}
+
+/* ---------- бот водителя ---------- */
+function botTrip(){return S.trips.filter(t=>t.drv===S.drv&&t.st!=='done').sort((a,b)=>b.id-a.id)[0]||S.trips.filter(t=>t.drv===S.drv).sort((a,b)=>b.id-a.id)[0]||null}
+function chatHtml(){
+  const t=botTrip(),d=drv(S.drv);
+  const sel=`<div class="ch-w"><label for="drv-sel">Водитель</label><select id="drv-sel" data-c="drv">${DRV.map(x=>{const a=S.trips.find(q=>q.drv===x.id&&q.st!=='done');return `<option value="${x.id}"${x.id===S.drv?' selected':''}>${x.n}${a?' · рейс №'+a.id:''}</option>`}).join('')}</select></div>`;
+  let msgs='';
+  if(!t)msgs='<div class="msg sys">Нет активных рейсов. Диспетчер пришлёт новый сюда.</div>';
+  else{
+    const lastIdx=t.log.length-1;
+    t.log.forEach((l,i)=>{
+      const nw=S.botNew===t.id+':'+i?' nw':'';
+      if(l.s==='new')return;
+      if(l.s==='assigned')msgs+=`<div class="msg in${nw}"><b>Новый рейс №${t.id}</b><br>${TOWNS[t.a].n} → ${TOWNS[t.b].n}, ${kmT(t)} км<br>Груз: ${esc(t.cargo)}, ${String(t.wt).replace('.',',')} т<br>Клиент: ${esc(t.client)}<time>${tm(l.t)}</time></div>`;
+      else if(l.by==='bot')msgs+=`<div class="msg out${nw}">${BTN[l.s]}<time>${tm(l.t)}</time></div><div class="msg in${nw}">Принято: <b>${ST[l.s].n}</b>. Клиент и диспетчер уже видят статус.${l.s==='done'?'<br>Счёт по рейсу выставлен.':''}<time>${tm(l.t)}</time></div>`;
+      else if(l.by==='auto')msgs+=`<div class="msg in${nw}">Вы на месте в ${TOWNS[t.b].n}. Когда закончите разгрузку, нажмите «Разгрузился».<time>${tm(l.t)}</time></div>`;
+      else msgs+=`<div class="msg sys${nw}">Диспетчер сменил статус: ${ST[l.s].n} · ${tm(l.t)}</div>`;
+    });
+  }
+  const ci=t?ORDER.indexOf(t.st):0;
+  const kb=['loading','enroute','done'].map(s=>{
+    const si=ORDER.indexOf(s);let dis=!t||t.st==='done'||!t.truck;
+    if(t&&!dis){if(si<=ci)dis=true;if(s==='done'&&ci<3)dis=true}
+    const nextS=t?(t.st==='assigned'?'loading':t.st==='loading'?'enroute':(t.st==='enroute'||t.st==='unloading')?'done':''):'';
+    const cur=t&&t.st===s;
+    return `<button class="btn${nextS===s?' next':''}${cur?' cur':''}" data-a="bot-btn" data-v="${s}"${dis&&!cur?' disabled':''}${cur?' aria-pressed="true" disabled':''}>${ic(BICON[s])}${BTN[s]}</button>`;
+  }).join('');
+  return `<div class="chat"><div class="ch-h"><span class="av">${ic('truck')}</span><div><b>Трасса · бот водителя</b><small>${esc(d.n)} · Telegram</small></div></div>${sel}<div class="msgs" id="msgs" tabindex="0" aria-label="Переписка с ботом">${msgs}</div><div class="kb"><div class="r3">${kb}</div><div class="fake">${ic('message-circle')}&nbsp;Печатать не нужно, только кнопки</div></div></div>`;
+}
+function driverView(){
+  const compact=S.device==='phone'||matchMedia('(max-width:520px)').matches;
+  if(compact)return chatHtml();
+  const t=botTrip();
+  let L='',R='';
+  if(t){
+    L=`<aside class="mir"><h3>У клиента ${esc(t.client)} сейчас</h3><div class="panel"><span class="tag" style="width:fit-content">Рейс №${t.id}</span><div class="st-w" id="mir-st">${ST[t.st].h}</div><div>${ic('clock')} ${t.truck?'Машина '+trk(t.truck).pl:'Машина не назначена'}${t.st==='enroute'?', осталось <span data-kml="'+t.id+'">'+kmLeft(t)+'</span> км':''}</div><button class="btn sm" data-a="as-client" data-v="${t.id}">${ic('user')} Открыть как клиент</button></div></aside>`;
+    R=`<aside class="mir"><h3>У диспетчера</h3><div class="panel"><div>${chip(t.st)}</div><div class="num">${esc(t.client)} · ${rtName(t)}</div><div class="demo-note">Статусов из бота за день: <b id="mir-n">${S.botN}</b>${t.inv?'<br>Счёт '+esc(t.inv.no)+' выставлен: '+fmt(t.price):''}</div><button class="btn sm" data-a="open-park" data-v="${t.id}">${ic('layout-dashboard')} Открыть на доске</button></div></aside>`;
+  }
+  return `<div class="botpc">${L||'<div class="mir"></div>'}<div class="pf">${chatHtml()}</div>${R||'<div class="mir"></div>'}</div>`;
+}
+
+/* ---------- слои ---------- */
+function sheetHtml(){
+  const s=S.sheet;if(!s)return '';
+  if(s.k==='help')return `<div class="scrim" data-a="close"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Что нажать" tabindex="-1"><div class="sh-h"><h2>Что нажать</h2><button class="ibtn" data-a="close" aria-label="Закрыть">${ic('x')}</button></div><div class="sh-b"><ol class="hs">
+   <li><div><b>Клиент видит машину</b>Рейс №4182: машина едет, статус и километры меняются сами. Время в демо ускорено.<br><button class="btn sm" data-a="go" data-v="#/">${ic('route')} Открыть рейс клиента</button></div></li>
+   <li><div><b>Диспетчер назначает</b>Нажмите «Назначить» у нового рейса, выберите машину и водителя.<br><button class="btn sm" data-a="go" data-v="#/a">${ic('layout-dashboard')} Открыть доску</button></div></li>
+   <li><div><b>Водитель отмечает статус</b>В боте нажмите «Загрузился», «В пути», «Разгрузился». Сергей Нестеров везёт рейс клиента.<br><button class="btn sm" data-a="go" data-v="#/driver">${ic('send')} Открыть бота</button></div></li>
+   <li><div><b>Клиент заказывает рейс</b>«Мои рейсы», «Заказать рейс»: заявка сразу попадает в «Новые» у диспетчера. Счёт выставится сам после «Разгрузился».</div></li></ol></div></div>`;
+  if(s.k==='trip'){const t=trip(S.sel);if(!t)return '';return `<div class="scrim" data-a="close-card"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Карточка рейса ${t.id}" tabindex="-1">${drawerHtml(t)}</div>`}
+  if(s.k==='order'){
+    const c=S.co,e=c.errs||{};
+    if(c.done)return `<div class="scrim" data-a="close"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Заявка принята" tabindex="-1"><div class="sh-h"><h2>Заявка принята</h2><button class="ibtn" data-a="close" aria-label="Закрыть">${ic('x')}</button></div><div class="sh-b okbig"><div class="num no">№${c.done}</div><p>Диспетчер уже видит рейс в колонке «Новые» и назначит машину. Статус вы увидите здесь.</p></div><div class="sh-f"><button class="btn cta" data-a="order-to-trip">${ic('route')} Смотреть рейс</button><button class="btn" data-a="close">Закрыть</button></div></div>`;
+    const km=c.from&&c.to&&c.from!==c.to?kmOf(c.from,c.to):0;
+    const est=km?Math.round(km*(55+(+c.wt||1)*5)/100)*100:0;
+    const tw=o=>TN.map(k=>`<option value="${k}"${c[o]===k?' selected':''}>${TOWNS[k].n}</option>`).join('');
+    const body=c.step===1?`<div class="fld"><label for="o-from">Откуда</label><select id="o-from" class="inp" data-c="o-from"><option value="">Выберите</option>${tw('from')}</select><div class="err" id="e-from">${e.from||''}</div></div>
+     <div class="fld"><label for="o-to">Куда</label><select id="o-to" class="inp" data-c="o-to"><option value="">Выберите</option>${tw('to')}</select><div class="err" id="e-to">${e.to||''}</div></div>
+     <div class="row2"><div class="fld"><label for="o-cargo">Груз</label><select id="o-cargo" class="inp" data-c="o-cargo">${CARGO.map(x=>`<option${c.cargo===x?' selected':''}>${x}</option>`).join('')}</select></div><div class="fld"><label for="o-wt">Вес, т</label><input id="o-wt" class="inp num" inputmode="decimal" value="${esc(c.wt)}" data-c="o-wt" aria-invalid="${e.wt?'true':'false'}"><div class="err" id="e-wt">${e.wt||''}</div></div></div>`
+    :`<div class="fld"><label for="o-day">Когда</label><select id="o-day" class="inp" data-c="o-day">${['Сегодня','Завтра','Послезавтра'].map(x=>`<option${c.day===x?' selected':''}>${x}</option>`).join('')}</select></div>
+     <div class="fld"><label for="o-name">Контактное лицо</label><input id="o-name" class="inp" value="${esc(c.name)}" data-c="o-name" autocomplete="off" aria-invalid="${e.name?'true':'false'}"><div class="err" id="e-name">${e.name||''}</div></div>
+     <div class="fld"><label for="o-phone">Телефон</label><input id="o-phone" class="inp num" inputmode="tel" value="${esc(c.phone)}" data-c="o-phone" autocomplete="off" aria-invalid="${e.phone?'true':'false'}"><div class="err" id="e-phone">${e.phone||''}</div></div>
+     <div class="fld"><label for="o-note">Комментарий водителю</label><textarea id="o-note" class="inp" maxlength="120" data-c="o-note">${esc(c.note)}</textarea></div>
+     <div class="panel pb" style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap"><span>${rtNameFT(c)}, ${km} км</span><b class="num" style="font:600 24px var(--fd)" id="o-est">${fmt(est)}</b></div><p class="demo-note">Ориентир, итоговую сумму подтвердит диспетчер.</p>`;
+    return `<div class="scrim" data-a="close"></div><div class="sheet" role="dialog" aria-modal="true" aria-label="Заказать рейс" tabindex="-1"><div class="sh-h"><h2>Заказать рейс</h2><button class="ibtn" data-a="close" aria-label="Закрыть">${ic('x')}</button></div><div class="sh-b"><div class="stp"><span class="${c.step===1?'on':'on'}">1. Маршрут</span><span class="${c.step===2?'on':''}">2. Контакты</span></div>${body}</div><div class="sh-f">${c.step===1?`<button class="btn cta" data-a="o-next">Дальше ${ic('arrow-right')}</button>`:`<button class="btn" data-a="o-back">Назад</button><button class="btn cta" data-a="o-submit" id="o-submit">Заказать рейс</button>`}</div></div>`;
+  }
+  return '';
+}
+const rtNameFT=c=>c.from&&c.to?TOWNS[c.from].n+' → '+TOWNS[c.to].n:'';
+
+/* ---------- пульт ---------- */
+function pultHtml(){
+  const r=S.route,m=r.startsWith('#/a')?'a':r==='#/driver'?'d':'c';
+  const B=(a,v,i,l,p)=>`<button data-a="${a}"${v?` data-v="${v}"`:''}${p!==undefined?` aria-pressed="${p}"`:''} title="${l}">${ic(i)}<span>${l}</span></button>`;
+  const dark=document.documentElement.dataset.theme==='dark'||(!document.documentElement.dataset.theme&&matchMedia('(prefers-color-scheme: dark)').matches);
+  return B('go','#/','user','Клиент',m==='c')+B('go','#/a','layout-dashboard','Диспетчер',m==='a')+B('go','#/driver','send','Бот',m==='d')+'<i class="sep"></i><span class="dev">'+B('device','','smartphone',S.device==='pc'?'Телефон':'ПК')+'</span>'+B('theme','',dark?'sun':'moon',dark?'Светлая':'Тёмная')+B('help','','circle-help','Что нажать');
+}
+
+/* ---------- рендер ---------- */
+const ROUTES=['#/','#/trips','#/invoices','#/a','#/a/debts','#/a/park','#/driver'];
+function wideNow(){return $('#frame').clientWidth>=1000}
+function render(){
+  const fr=$('#frame'),view=$('#view'),r=S.route;
+  const keep={st:fr.scrollTop,bd:(view.querySelector('.board')||{}).scrollLeft||0,dr:(view.querySelector('.drawer')||{}).scrollTop||0,sh:(document.querySelector('.sheet')||{}).scrollTop||0};
+  const ae=document.activeElement,fk=ae&&ae!==document.body&&ae.closest&&(ae.closest('#view')||ae.closest('.sheet'))?{id:ae.id,a:ae.dataset&&ae.dataset.a,v:ae.dataset&&ae.dataset.v,c:ae.dataset&&ae.dataset.c,cls:ae.className}:null;
+  S.wide=wideNow();
+  document.body.className=(r.startsWith('#/a')?'m-admin':r==='#/driver'?'m-driver':'m-client')+(S.sheet?' has-sheet':'')+(S.pultOpen?' pult-open':'')+(CLEAN?' clean':'')+(S.device==='phone'?' phonemode':'')+(S.entered?'':' ent');
+  $('#stage').classList.toggle('phone',S.device==='phone'&&matchMedia('(min-width:521px)').matches);
+  if(S.sheet&&S.sheet.k==='trip'&&S.wide){S.sheet=null}
+  let html;
+  if(r.startsWith('#/a')){html=r==='#/a/debts'?adminDebts():r==='#/a/park'?adminPark():adminBoard()}
+  else if(r==='#/driver')html=driverView();else html=clientView();
+  view.innerHTML=html;
+  $('#ov').innerHTML=sheetHtml();
+  $('#pult').innerHTML=pultHtml();
+  fr.scrollTop=keep.st;const b=view.querySelector('.board');if(b)b.scrollLeft=keep.bd;const dr=view.querySelector('.drawer');if(dr)dr.scrollTop=keep.dr;
+  const sh=document.querySelector('.sheet');if(sh){sh.scrollTop=keep.sh}
+  const ms=$('#msgs');if(ms)ms.scrollTop=ms.scrollHeight;
+  if(fk){let el=null;if(fk.id)el=document.getElementById(fk.id);if(!el&&fk.a)el=$$('[data-a="'+fk.a+'"]').find(x=>x.dataset.v===fk.v);if(!el&&fk.c)el=$('[data-c="'+fk.c+'"]');if(el&&el.focus&&!el.disabled)el.focus({preventScroll:true})}
+  else if(sh&&!S.sheetFocused){S.sheetFocused=true;sh.focus({preventScroll:true})}
+  if(!S.sheet)S.sheetFocused=false;
+  if(!S.kpiDone&&r==='#/a'&&!STILL&&!RM){S.kpiDone=true;$$('[data-count]').forEach(el=>{const v=+el.dataset.count,m=el.dataset.money==='1',t0=performance.now();(function f(n){const k=Math.min(1,(n-t0)/700),e=1-Math.pow(1-k,3),x=Math.round(v*e);el.textContent=m?fmt(x):fmtn(x);if(k<1)requestAnimationFrame(f)})(t0)})}
+  else if(r==='#/a')S.kpiDone=true;
+  const db=$('#dbars');if(db&&!S.barsDone){if(RM||STILL){S.barsDone=true;db.classList.remove('grow-pre')}else{S.barsDone=true;requestAnimationFrame(()=>requestAnimationFrame(()=>db.classList.remove('grow-pre')))}}
+  if(S.botNew)setTimeout(()=>{S.botNew=null},80);
+  if(!S.entered){S.entered=true;setTimeout(()=>document.body.classList.remove('ent'),900)}
+}
+function softRender(){
+  const a=document.activeElement;
+  if(S.sheet&&S.sheet.k==='order')return;
+  if(a&&/^(INPUT|TEXTAREA)$/.test(a.tagName))return;
+  render();
+}
+function setRoute(h){
+  if(!ROUTES.includes(h))h='#/';
+  S.route=h;S.sheet=null;S.pultOpen=false;
+  try{history.replaceState(null,'',h)}catch(e){}
+  render();
+  const fr=$('#frame');fr.scrollTop=0;window.scrollTo(0,0);
+}
+
+/* ---------- действия ---------- */
+function openTrip(id){S.sel=id;S.openCard=true;if(!wideNow())S.sheet={k:'trip'}}
+const ACT={
+ go(v){setRoute(v)},
+ theme(){const d=document.documentElement,cur=d.dataset.theme||(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light');d.dataset.theme=cur==='dark'?'light':'dark'},
+ device(){S.device=S.device==='pc'?'phone':'pc';S.sheet=null},
+ 'pult-toggle'(){S.pultOpen=!S.pultOpen},
+ help(){S.sheet={k:'help'};S.pultOpen=false},
+ close(){S.sheet=null},
+ 'close-card'(){S.sheet=null;S.sel=null;S.openCard=false},
+ open(v){openTrip(+v)},
+ 'open-park'(v){S.route='#/a';openTrip(+v);try{history.replaceState(null,'','#/a')}catch(e){}},
+ tf(v){S.tfilt=v},
+ 'open-trip'(v){S.focus=+v;S.route='#/'},
+ dl(){toast('В демо файл счёта не формируется')},
+ 'order-open'(){S.co={step:1,from:'klu',to:'zar',cargo:'Паллеты',wt:'4',day:'Завтра',name:'',phone:'',note:'',errs:{},done:null};S.sheet={k:'order'}},
+ 'o-next'(){
+  const c=S.co,e={};
+  if(!c.from)e.from='Выберите, откуда везти';
+  if(!c.to)e.to='Выберите, куда везти';
+  if(c.from&&c.to&&c.from===c.to)e.to='Пункты отправления и назначения совпадают';
+  const w=parseFloat(String(c.wt).replace(',','.'));
+  if(!(w>=0.1&&w<=20))e.wt='Вес от 0,1 до 20 т';
+  c.errs=e;if(!Object.keys(e).length)c.step=2},
+ 'o-back'(){S.co.step=1;S.co.errs={}},
+ 'o-submit'(){
+  const c=S.co,e={};
+  if(!/^[A-Za-zА-Яа-яЁё][A-Za-zА-Яа-яЁё\s\-]{1,39}$/.test(c.name.trim()))e.name='Введите имя буквами, от 2 до 40 символов';
+  const dg=c.phone.replace(/\D/g,'');
+  if(!(dg.length===10||dg.length===11)||/[^\d\s()+\-]/.test(c.phone))e.phone='Телефон: 10 или 11 цифр';
+  c.errs=e;if(Object.keys(e).length)return;
+  const w=parseFloat(String(c.wt).replace(',','.')),km=kmOf(c.from,c.to),id=S.nextId++;
+  const t={id,client:S.cl,a:c.from,b:c.to,cargo:c.cargo,wt:w,st:'new',prog:0,truck:null,drv:null,price:Math.round(km*(55+w*5)/100)*100,note:(c.note||'').trim().slice(0,120),day:'today',late:0,inv:null,log:[{t:nowMin(),s:'new',by:'client'}]};
+  S.trips.push(t);S.focus=id;S.flash=id;c.done=id;
+  clearTimeout(S.ft);S.ft=setTimeout(()=>{S.flash=null;softRender()},2200)},
+ 'order-to-trip'(){S.sheet=null;S.route='#/';S.co=null},
+ 'set-st'(v){const t=trip(S.sel);if(!t)return;if(!setStatus(t.id,v,'dsp'))return;toast('Рейс №'+t.id+': '+ST[v].n+'. Клиент уже видит.')},
+ 'next-st'(){const t=trip(S.sel);if(!t)return;const n=ORDER[ORDER.indexOf(t.st)+1];if(n&&setStatus(t.id,n,'dsp'))toast('Рейс №'+t.id+': '+ST[n].n+'. Клиент уже видит.')},
+ 'do-asg'(){
+  const t=trip(S.sel);if(!t)return;const a=S.asg[t.id]||{truck:t.truck||'',drv:t.drv||''};
+  if(!a.truck||!a.drv){S.perr[t.id]=Object.assign(S.perr[t.id]||{},{asg:'Выберите машину и водителя'});return}
+  if(busyTrk(a.truck,t.id)||busyDrv(a.drv,t.id)){S.perr[t.id]=Object.assign(S.perr[t.id]||{},{asg:'Эта машина или водитель уже в рейсе'});return}
+  S.perr[t.id]=Object.assign(S.perr[t.id]||{},{asg:''});
+  const was=t.st;assign(t.id,a.truck,a.drv);delete S.asg[t.id];
+  toast(was==='new'?'Рейс №'+t.id+' назначен: '+trk(a.truck).pl+', '+drv(a.drv).n:'Изменения сохранены');S.drv=a.drv},
+ 'price-save'(){
+  const t=trip(S.sel);if(!t)return;const el=$('#pr-in'),raw=el?el.value.replace(/\s/g,''):'';
+  if(!/^\d{4,6}$/.test(raw)||+raw<1000||+raw>500000){S.perr[t.id]=Object.assign(S.perr[t.id]||{},{price:'Сумма от 1 000 до 500 000 ₽'});return}
+  t.price=+raw;S.perr[t.id]=Object.assign(S.perr[t.id]||{},{price:''});toast('Стоимость рейса №'+t.id+': '+fmt(t.price)+'. Клиент видит новую сумму.')},
+ 'inv-paid'(v){const t=trip(+v);if(!t||!t.inv)return;t.inv.paid=true;toast('Счёт '+t.inv.no+' оплачен: '+fmt(t.price))},
+ 'remind-inv'(v){const t=trip(+v);if(!t)return;S.reminded[t.id]=true;toast('Напоминание по счёту '+t.inv.no+' отправлено клиенту (демо)')},
+ 'remind-cl'(v){S.reminded[v]=true;toast('Напоминание отправлено: '+v+' (демо)')},
+ exp(v){S.exp[v]=!S.exp[v]},
+ 'copy-link'(v){toast('Ссылка trassa.demo/r/'+v+' скопирована (демо)')},
+ 'as-client'(v){const t=trip(+v);if(!t)return;S.cl=t.client;S.focus=t.id;setRoute('#/');return false},
+ 'to-bot'(v){const t=trip(+v);if(!t||!t.drv)return;S.drv=t.drv;setRoute('#/driver');return false},
+ 'bot-btn'(v){
+  const t=botTrip();if(!t)return;
+  if(setStatus(t.id,v,'bot')){S.botNew=t.id+':'+(t.log.length-1)}
+ }
+};
+document.addEventListener('click',ev=>{
+  const el=ev.target.closest('[data-a]');if(!el||el.disabled)return;
+  const a=el.dataset.a,f=ACT[a];if(!f)return;
+  if(f(el.dataset.v)===false)return;
+  render();
+});
+document.addEventListener('change',ev=>{
+  const el=ev.target,c=el.dataset&&el.dataset.c;if(!c)return;
+  if(c==='drv'){S.drv=el.value;S.botNew=null;render();return}
+  if(c==='asg-truck'||c==='asg-drv'){
+    const t=trip(S.sel);if(!t)return;const a=S.asg[t.id]=S.asg[t.id]||{truck:t.truck||'',drv:t.drv||''};
+    if(c==='asg-truck'){a.truck=el.value;if(el.value){const d=trk(el.value).drv;if(!busyDrv(d,t.id))a.drv=d}}else a.drv=el.value;
+    S.perr[t.id]=Object.assign(S.perr[t.id]||{},{asg:''});render();return}
+  if(S.co&&c.startsWith('o-')){
+    const k=c.slice(2);S.co[k==='wt'||k==='name'||k==='phone'||k==='note'?k:k]=el.value;
+    if(k==='from'||k==='to'){S.co.errs={};render()}
+  }
+});
+document.addEventListener('input',ev=>{
+  const el=ev.target,c=el.dataset&&el.dataset.c;
+  if(S.co&&c&&c.startsWith('o-')&&el.tagName!=='SELECT'){S.co[c.slice(2)]=el.value}
+});
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'){if(S.sheet){S.sheet=null;if(S.route.startsWith('#/a'))S.sel=null;render()}else if(S.sel&&S.route.startsWith('#/a')){S.sel=null;S.openCard=false;render()}}
+  if(ev.key==='Tab'&&S.sheet){const sh=$('.sheet');if(!sh)return;const f=[...sh.querySelectorAll('button,select,input,textarea,[tabindex="0"]')].filter(x=>!x.disabled&&x.offsetParent);if(!f.length)return;const a=f.indexOf(document.activeElement);if(ev.shiftKey&&(a<=0)){ev.preventDefault();f[f.length-1].focus()}else if(!ev.shiftKey&&a===f.length-1){ev.preventDefault();f[0].focus()}}
+});
+window.addEventListener('hashchange',()=>{const h=location.hash||'#/';if(h!==S.route)setRoute(h)});
+if(window.ResizeObserver)new ResizeObserver(()=>{if(wideNow()!==S.wide)softRender()}).observe($('#frame'));
+
+/* ---------- живое: машины едут ---------- */
+function tick(){
+  const dp=RM?.024:.006;let ch=false;
+  S.trips.forEach(t=>{
+    if(t.st!=='enroute')return;
+    t.prog=Math.min(.985,t.prog+dp);
+    if(t.prog>=.985){t.prog=1;setStatus(t.id,'unloading','auto');ch=true;toast('Рейс №'+t.id+' прибыл: разгрузка');return}
+    const r=RT(t.a,t.b),p=posAt(r,t.prog),x=p.x/10+'%',y=p.y/6+'%';
+    $$('.mk[data-t="'+t.id+'"]').forEach(m=>{m.style.left=x;m.style.top=y});
+    $$('[data-lt="'+t.id+'"]').forEach(m=>{m.style.left=x;m.style.top=y});
+    $$('path.pass[data-t="'+t.id+'"]').forEach(m=>m.setAttribute('d',dstr(partial(r,t.prog))));
+    $$('.rl-truck[data-t="'+t.id+'"]').forEach(m=>m.style.left=t.prog*100+'%');
+    $$('.rl-done[data-t="'+t.id+'"]').forEach(m=>m.style.width=t.prog*100+'%');
+    $$('[data-pb="'+t.id+'"]').forEach(m=>m.style.width=t.prog*100+'%');
+    $$('[data-kml="'+t.id+'"]').forEach(m=>m.textContent=kmLeft(t));
+    $$('[data-eta="'+t.id+'"]').forEach(m=>m.textContent=etaT(t));
+  });
+  $$('[data-clock]').forEach(m=>m.textContent=tm(nowMin()));
+  if(ch)softRender();
+}
+if(!STILL)setInterval(tick,RM?4000:1000);
+
+/* старт */
+(function(){
+  const h=location.hash;S.route=ROUTES.includes(h)?h:'#/';
+  render();
+})();
+</script>
+</body>
+</html>
